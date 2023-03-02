@@ -53,6 +53,7 @@
     "watch:labextension": "jupyter labextension watch ."
   },
   "dependencies": {
+    "@mui/x-data-grid": "^5.1.0"
   },
   "devDependencies": {
     "@jupyterlab/builder": "^3.1.0",
@@ -79,7 +80,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "jupyterlab": { 
+  "jupyterlab": {
     "extension": true,
     "outputDir": "webds_register_map/labextension",
     "sharedPackages": {
