@@ -41,7 +41,7 @@ export const RegisterViewerContent = (props: IProps): JSX.Element => {
             </Container>
             <Divider orientation="vertical" sx={{ borderBottomWidth: 430 }} />
             <Container sx={{ width: '50%', height: 420, overflowY: 'auto' }}>
-                {props.isLoading ? (
+                {props.isLoading && props.progress.total > 1 ? (
                     <RegisterProgress
                         progress={props.progress.current}
                         total={props.progress.total}

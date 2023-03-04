@@ -77,8 +77,6 @@ export const Landing = (props: any): JSX.Element => {
                 sseData.current[data.index].value = data.value;
                 if (data.index % 10 === 0) {
                     setProgress({ current: data.index, total: sseData.current.length });
-                }
-                if (data.index % 100 === 0) {
                     let newRows: any = [];
                     Object.assign(newRows, sseData.current);
                     setRowData(newRows);

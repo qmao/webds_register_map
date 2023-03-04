@@ -26,12 +26,14 @@ export const ShowExport = (data: any, value: any) => {
                 sx={{ fontSize: '14px' }}
                 onClick={() => {
                     let newData: any = data.map((r: any, index: any) => {
+                        let newRow: any = {};
+                        Object.assign(newRow, r);
                         try {
-                            r['address'] = value[index].toString(16);
-                            r['value'] = value[index];
-                            r['bits'] = JSON.parse(r['bits']);
+                            newRow['address'] = '0x' + r['address'].toString(16);
+                            newRow['value'] = value[index];
+                            newRow['bits'] = JSON.parse(r['bits']);
                         } catch { }
-                        return r;
+                        return newRow;
                     });
                     const jsonString = JSON.stringify(newData, null, 2);
                     const blob = new Blob([jsonString], {

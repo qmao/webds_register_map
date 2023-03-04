@@ -95,8 +95,6 @@ export const RegisterData = (props: any): JSX.Element => {
             let value: any = -1;
             let pdata = data[key]['Position'];
 
-            console.log('QQQQC', content.current);
-
             if (content.current === undefined) {
                 value = undefined;
             } else if (pdata.length === 1) {
