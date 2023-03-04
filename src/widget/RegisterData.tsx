@@ -101,10 +101,10 @@ export const RegisterData = (props: any): JSX.Element => {
                 value = undefined;
             } else if (pdata.length === 1) {
                 position = pdata[0];
-                value = getBitRange(content.current, pdata[0], pdata[0]);
+                value = getBitRange(Number(content.current), pdata[0], pdata[0]);
             } else {
                 position = pdata[0] + '-' + pdata[1];
-                value = getBitRange(content.current, pdata[0], pdata[1]);
+                value = getBitRange(Number(content.current), pdata[0], pdata[1]);
             }
 
             let d = createData(key, position, data[key]['Type'], value);
