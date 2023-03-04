@@ -37,8 +37,8 @@ export const RegisterViewerContent = (props: IProps): JSX.Element => {
                     isLoading={props.isLoading}
                 />
             </Container>
-            <Divider orientation="vertical" sx={{ borderBottomWidth: 450 }} />
-            <Container sx={{ width: '50%', height: 500, overflowY: 'auto' }}>
+            <Divider orientation="vertical" sx={{ borderBottomWidth: 430 }} />
+            <Container sx={{ width: '50%', height: 420, overflowY: 'auto' }}>
                 <RegisterData row={props.currentRow} />
             </Container>
         </Stack>

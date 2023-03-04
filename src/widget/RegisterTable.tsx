@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { styled } from '@mui/material/styles';
 import { visuallyHidden } from '@mui/utils';
+
 import {
     Box,
     Paper,
@@ -21,6 +22,7 @@ import {
     tableCellClasses
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import FilterListIcon from '@mui/icons-material/FilterList';
 
 interface IProps {
     rows: any;
@@ -166,12 +168,13 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 
     const StyledTableCell = styled(TableCell)(({ theme }) => ({
         [`&.${tableCellClasses.head}`]: {
-            //backgroundColor: theme.palette.common.black,
-            //color: theme.palette.common.white,
-            //borderColor: theme.palette.common.grey,
+            //backgroundColor: '#f5f5f5',
+            height: 40,
+            //color: theme.palette.common.black
+            borderColor: theme.palette.common.black
         },
         [`&.${tableCellClasses.body}`]: {
-            fontSize: 20
+            fontSize: 30
         }
     }));
 
@@ -282,16 +285,35 @@ export const RegisterTable = (props: IProps): JSX.Element => {
     const [searchText, setSearchText] = useState('');
     const [displayList, setDisplayList] = useState([]);
     const [valueList, setValueList] = useState<string[]>([]);
+    const myRef = useRef<any>(null);
+    const [searchIndex, setSearchIndex] = useState(0);
 
     useEffect(() => {
         props.onRowSelect(selected);
     }, [selected]);
 
     useEffect(() => {
+        scrollToIndex(searchIndex);
+    }, [page]);
+
+    useEffect(() => {
         if (searchText === '') {
             setDisplayList(props.rows);
         }
     }, [searchText]);
+
+    const scrollToIndex = (index: any) => {
+        if (index !== 0) {
+            const rowRef = myRef.current?.querySelector(`[data-index="${index}"]`);
+
+            console.log('QQQQQQS2', rowRef);
+            if (rowRef) {
+                rowRef.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                rowRef.click();
+            }
+            setSearchIndex(0);
+        }
+    };
 
     const toHex = (value: number) => {
         if (!isNaN(value)) {
@@ -324,16 +346,20 @@ export const RegisterTable = (props: IProps): JSX.Element => {
 
     useEffect(() => { }, []);
 
-    function isAddressOverThan(value: any) {
-        return (
-            value.name.indexOf(searchText) >= 0 ||
-            value.block.indexOf(searchText) >= 0 ||
-            JSON.stringify(value.bits).indexOf(searchText) >= 0
-        );
+    function applyFilter(wordToCompare: any) {
+        return function (value: any) {
+            return (
+                value.name.indexOf(wordToCompare) >= 0 ||
+                value.block.indexOf(wordToCompare) >= 0 ||
+                JSON.stringify(value.bits).indexOf(wordToCompare) >= 0 ||
+                (value.description !== undefined &&
+                    value.description.indexOf(wordToCompare) >= 0)
+            );
+        };
     }
 
-    const filterList = (searchText: any) => {
-        let newRows = rows.filter(isAddressOverThan);
+    const filterList = (value: any) => {
+        let newRows = rows.filter(applyFilter(value));
         setDisplayList(newRows);
     };
 
@@ -382,6 +408,14 @@ export const RegisterTable = (props: IProps): JSX.Element => {
         console.log('handleValueChange', value, index);
     };
 
+    const handleSearchKeyPress = (event: any) => {
+        if (event.key === 'Enter') {
+            console.log('handleValueKeyPress - Enter');
+            let index = Number(event.target.value);
+            searchForIndex(index);
+        }
+    };
+
     const handleRequestSort = (
         event: React.MouseEvent<unknown>,
         property: keyof Data
@@ -428,6 +462,11 @@ export const RegisterTable = (props: IProps): JSX.Element => {
         setSelected(newSelected);
     };
 
+    const handleOnFilterFocus = (event: any) => {
+        console.log('ON FOCUS');
+        setPage(0);
+    };
+
     const handleChangePage = (event: unknown, newPage: number) => {
         setPage(newPage);
     };
@@ -445,7 +484,55 @@ export const RegisterTable = (props: IProps): JSX.Element => {
     const emptyRows =
         page > 0 ? Math.max(0, (1 + page) * rowsPerPage - displayList.length) : 0;
 
+    const searchForIndex = (index: any) => {
+        setSearchIndex(index);
+
+        let rindex = displayList.findIndex((r: any) => r.address === index);
+        if (rindex === -1) {
+            return;
+        }
+        let rpage = Math.floor(rindex / rowsPerPage);
+
+        console.log('QQQQQQ', rindex, rpage, page);
+        if (rpage === page) {
+            scrollToIndex(index);
+        } else {
+            setPage(rpage);
+        }
+    };
+
+    const handleSearchChange = (event: any) => {
+        console.log(Number(event.target.value));
+        let index = Number(event.target.value);
+        searchForIndex(index);
+    };
+
     function getSearchInput() {
+        return (
+            <Stack
+                direction="row"
+                sx={{ width: 130, color: 'primary.main', border: 1, borderRadius: 5 }}
+            >
+                <IconButton
+                    type="button"
+                    sx={{ p: '1px', ml: 1, color: 'primary.main', fontSize: 10 }}
+                    aria-label="search"
+                //onClick={onSearchClick}
+                >
+                    <SearchIcon />
+                </IconButton>
+                <InputBase
+                    sx={{ fontSize: 12, flex: 1, pl: 1 }}
+                    placeholder="Search Address"
+                    inputProps={{ 'aria-label': 'search address' }}
+                    onBlur={handleSearchChange}
+                    onKeyPress={handleSearchKeyPress}
+                />
+            </Stack>
+        );
+    }
+
+    function getFilterInput() {
         return (
             <Stack
                 direction="row"
@@ -457,14 +544,16 @@ export const RegisterTable = (props: IProps): JSX.Element => {
                     aria-label="search"
                 //onClick={onSearchClick}
                 >
-                    <SearchIcon />
+                    <FilterListIcon />
                 </IconButton>
                 <InputBase
-                    sx={{ fontSize: 12, flex: 1 }}
-                    placeholder="Search Address"
+                    sx={{ fontSize: 12, flex: 1, pl: 1 }}
+                    placeholder="Filter"
                     inputProps={{ 'aria-label': 'search address' }}
                     onChange={handleFilterChange}
+                    onBlur={handleFilterChange}
                     value={searchText}
+                    onFocus={handleOnFilterFocus}
                 />
             </Stack>
         );
@@ -489,10 +578,15 @@ export const RegisterTable = (props: IProps): JSX.Element => {
                     ) : (
                             <Typography></Typography>
                         )}
-                    {getSearchInput()}
+                    <Stack direction="row" spacing={1}>
+                        {getFilterInput()}
+                        {getSearchInput()}
+                    </Stack>
                 </Stack>
-                <TableContainer sx={{ height: 400, overflowY: 'auto' }}>
+                <TableContainer sx={{ height: 340, overflowY: 'auto' }}>
                     <Table
+                        ref={myRef}
+                        stickyHeader
                         sx={{ width: 505 }}
                         aria-labelledby="tableTitle"
                         size={'small'}
@@ -514,12 +608,13 @@ export const RegisterTable = (props: IProps): JSX.Element => {
 
                                     return (
                                         <TableRow
+                                            key={row.address}
+                                            data-index={row.address}
                                             onClick={(event: any) => handleFocus(event, row.address)}
                                             hover
                                             role="checkbox"
                                             aria-checked={isItemSelected}
                                             tabIndex={-1}
-                                            key={row.name}
                                             selected={isItemSelected}
                                         >
                                             <TableCell padding="checkbox">
@@ -611,6 +706,7 @@ export const RegisterTable = (props: IProps): JSX.Element => {
                     </Table>
                 </TableContainer>
                 <TablePagination
+                    //sx={{ backgroundColor: '#f5f5f5' }}
                     rowsPerPageOptions={[]}
                     component="div"
                     count={displayList.length}
