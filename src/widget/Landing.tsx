@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 import { Canvas } from './mui_extensions/Canvas';
 import { Content } from './mui_extensions/Content';
@@ -6,7 +6,17 @@ import { Controls } from './mui_extensions/Controls';
 
 import { RegisterViewerContent } from './RegisterViewerContent';
 import { EAction, RegisterViewerControl } from './RegisterViewerControl';
-import { ReadRegisters, WriteRegisters, GetJson } from './backend_api';
+import {
+    ReadRegisters,
+    WriteRegisters,
+    GetJson,
+    TerminateSSE
+} from './backend_api';
+
+const ELongTask = {
+    Read: 0,
+    Write: 1
+};
 
 interface IRegister {
     address: any;
@@ -18,11 +28,19 @@ interface IRegister {
     modified: any;
 }
 
+interface IProgress {
+    current: any;
+    total: any;
+}
+
 export const Landing = (props: any): JSX.Element => {
     const [rowData, setRowData] = useState<IRegister[]>([]);
     const [isLoading, setLoading] = useState(true);
     const [selected, setSelected] = useState<IRegister[]>([]);
-
+    const [progress, setProgress] = useState<IProgress>({
+        current: 0,
+        total: 0
+    });
     //const [selected, setSelected] = useState<IRegister[]>([]);
     const [currentRow, setCurrentRow] = useState<IRegister>({
         address: '',
@@ -34,10 +52,88 @@ export const Landing = (props: any): JSX.Element => {
         modified: false
     });
 
-    function resetFlag(data: any) {
-        data.forEach(function (x: any) {
-            x.modified = false;
-        });
+    // SSE START
+    const eventSource = useRef<undefined | EventSource>(undefined);
+    const eventError = useRef(false);
+    const eventType = 'Register';
+    const eventRoute = '/webds/register';
+    const sseData = useRef<IRegister[]>([]);
+
+    const removeEvent = () => {
+        const SSE_CLOSED = 2;
+        if (eventSource.current && eventSource.current!.readyState !== SSE_CLOSED) {
+            eventSource.current!.removeEventListener(eventType, eventHandler, false);
+            eventSource.current!.close();
+            eventSource.current = undefined;
+            console.log('SSE EVENT IS REMOVED');
+        }
+    };
+
+    const eventHandler = (event: any) => {
+        const data = JSON.parse(event.data);
+
+        switch (data.status) {
+            case 'run':
+                sseData.current[data.index].value = data.value;
+                if (data.index % 10 === 0) {
+                    setProgress({ current: data.index, total: sseData.current.length });
+                }
+                if (data.index % 100 === 0) {
+                    let newRows: any = [];
+                    Object.assign(newRows, sseData.current);
+                    setRowData(newRows);
+                }
+                break;
+            case 'done':
+            case 'terminate':
+                setProgress({
+                    current: sseData.current.length,
+                    total: sseData.current.length
+                });
+                let newRows: any = [];
+                Object.assign(newRows, sseData.current);
+                setRowData(newRows);
+                removeEvent();
+                setLoading(false);
+                break;
+        }
+    };
+
+    const errorHandler = (error: any) => {
+        eventError.current = true;
+        removeEvent();
+        console.error(`Error on GET ${eventRoute}\n${error}`);
+    };
+
+    const addEvent = () => {
+        if (eventSource.current) {
+            return;
+        }
+        eventError.current = false;
+        eventSource.current = new window.EventSource(eventRoute);
+        eventSource.current!.addEventListener(eventType, eventHandler, false);
+        eventSource.current!.addEventListener('error', errorHandler, false);
+    };
+    // SSE END
+
+    function startLongTask(task: any, data: any) {
+        setProgress({ current: 0, total: data.length });
+
+        // start sse event
+        addEvent();
+
+        switch (task) {
+            case ELongTask.Read:
+                ReadRegisters(data, true).then((ret) => {
+                    console.log('STARTING SSE BACKEND READ', ret);
+                });
+                break;
+            case ELongTask.Write:
+                WriteRegisters(data, true).then((ret) => {
+                    console.log('STARTING SSE BACKEND WRITE', ret);
+                });
+                break;
+        }
     }
 
     function parseRegisterJson(data: any) {
@@ -58,7 +154,7 @@ export const Landing = (props: any): JSX.Element => {
                 register.address = base_addr + data[block]['Register'][r]['Offset'];
                 register.block = block;
                 register.name = r;
-                register.value = 0;
+                register.value = undefined;
                 register.description = data[block]['Register'][r]['Description'];
                 register.bits = JSON.stringify(data[block]['Register'][r]['Bits']);
 
@@ -71,17 +167,13 @@ export const Landing = (props: any): JSX.Element => {
             return d.address;
         });
         // for testing purpose only read first page
-        rd = rd.slice(0, 20);
+        //rd = rd.slice(0, 20);
 
-        ReadRegisters(rd).then((data) => {
-            if (data) {
-                registerList.forEach((element: any, index: any) => {
-                    element.value = data[index];
-                });
-                setRowData(registerList);
-                setLoading(false);
-            }
-        });
+        sseData.current = registerList;
+
+        setRowData(registerList);
+
+        startLongTask(ELongTask.Read, rd);
     }
 
     function onRowClick(r: any) {
@@ -141,17 +233,7 @@ export const Landing = (props: any): JSX.Element => {
                     rd = rowData.map((d) => {
                         return d.address;
                     });
-                    ReadRegisters(rd).then((data) => {
-                        if (data) {
-                            Object.assign(newData, rowData);
-                            newData.forEach((element: any, index: any) => {
-                                element.value = data[index];
-                            });
-                            resetFlag(newData);
-                            setRowData(newData);
-                            setLoading(false);
-                        }
-                    });
+                    startLongTask(ELongTask.Read, rd);
 
                     break;
                 case EAction.WriteAll:
@@ -159,17 +241,7 @@ export const Landing = (props: any): JSX.Element => {
                         return { address: d.address, value: Number(d.value) };
                     });
 
-                    WriteRegisters(wd).then((data) => {
-                        if (data) {
-                            Object.assign(newData, rowData);
-                            newData.forEach((element: any, index: any) => {
-                                element.value = data[index];
-                            });
-                            resetFlag(newData);
-                            setRowData(newData);
-                            setLoading(false);
-                        }
-                    });
+                    startLongTask(ELongTask.Write, rd);
 
                     break;
                 case EAction.ReadRegister:
@@ -178,8 +250,8 @@ export const Landing = (props: any): JSX.Element => {
                     } else {
                         rd = selected;
                     }
-
-                    ReadRegisters(rd).then((data) => {
+                    setProgress({ current: 0, total: rd.length });
+                    ReadRegisters(rd, false).then((data) => {
                         if (data) {
                             Object.assign(newData, rowData);
 
@@ -198,10 +270,6 @@ export const Landing = (props: any): JSX.Element => {
                     });
                     break;
                 case EAction.WriteRegister:
-                    wd = [
-                        { address: currentRow.address, value: Number(currentRow.value) }
-                    ];
-
                     if (selected.length === 0) {
                         wd = [
                             { address: currentRow.address, value: Number(currentRow.value) }
@@ -216,7 +284,8 @@ export const Landing = (props: any): JSX.Element => {
                         });
                     }
 
-                    WriteRegisters(wd).then((data) => {
+                    setProgress({ current: 0, total: wd.length });
+                    WriteRegisters(wd, false).then((data) => {
                         if (data) {
                             Object.assign(newData, rowData);
                             wd.forEach((w: any, index: any) => {
@@ -233,6 +302,11 @@ export const Landing = (props: any): JSX.Element => {
                     });
 
                     break;
+                case EAction.Terminate:
+                    TerminateSSE().then(() => {
+                        setLoading(false);
+                    });
+                    break;
             }
         } catch {
             alert('error');
@@ -241,6 +315,7 @@ export const Landing = (props: any): JSX.Element => {
     }
 
     useEffect(() => {
+        setLoading(true);
         GetJson().then((data) => {
             parseRegisterJson(JSON.parse(data));
         });
@@ -256,6 +331,7 @@ export const Landing = (props: any): JSX.Element => {
                     onRowSelect={onRowSelect}
                     onRowUpdate={onRowUpdate}
                     isLoading={isLoading}
+                    progress={progress}
                 />
             </Content>
             <Controls
@@ -266,7 +342,7 @@ export const Landing = (props: any): JSX.Element => {
                     justifyContent: 'center'
                 }}
             >
-                <RegisterViewerControl onAction={onAction} />
+                <RegisterViewerControl onAction={onAction} isLoading={isLoading} />
             </Controls>
         </Canvas>
     );

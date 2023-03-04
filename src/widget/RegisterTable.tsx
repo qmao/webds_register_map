@@ -316,10 +316,15 @@ export const RegisterTable = (props: IProps): JSX.Element => {
     };
 
     const toHex = (value: number) => {
-        if (!isNaN(value)) {
-            let h = ('00000000' + value.toString(16).toUpperCase()).slice(-8);
-            return `0x${h}`;
-        } else {
+        try {
+            if (!isNaN(value)) {
+                let h = ('00000000' + value.toString(16).toUpperCase()).slice(-8);
+                return `0x${h}`;
+            } else {
+                return '';
+            }
+        } catch {
+            console.log('EXCEPTION TO HEX:', value);
             return '';
         }
     };
@@ -435,6 +440,9 @@ export const RegisterTable = (props: IProps): JSX.Element => {
     };
 
     const handleFocus = (event: React.MouseEvent<unknown>, address: any) => {
+        if (props.isLoading) {
+            return;
+        }
         const obj = displayList.find((r: any) => {
             return r.address === address;
         });
@@ -522,8 +530,9 @@ export const RegisterTable = (props: IProps): JSX.Element => {
                     <SearchIcon />
                 </IconButton>
                 <InputBase
+                    disabled={props.isLoading}
                     sx={{ fontSize: 12, flex: 1, pl: 1 }}
-                    placeholder="Search Address"
+                    placeholder="Address"
                     inputProps={{ 'aria-label': 'search address' }}
                     onBlur={handleSearchChange}
                     onKeyPress={handleSearchKeyPress}
@@ -547,6 +556,7 @@ export const RegisterTable = (props: IProps): JSX.Element => {
                     <FilterListIcon />
                 </IconButton>
                 <InputBase
+                    disabled={props.isLoading}
                     sx={{ fontSize: 12, flex: 1, pl: 1 }}
                     placeholder="Filter"
                     inputProps={{ 'aria-label': 'search address' }}
@@ -619,6 +629,7 @@ export const RegisterTable = (props: IProps): JSX.Element => {
                                         >
                                             <TableCell padding="checkbox">
                                                 <Checkbox
+                                                    disabled={props.isLoading}
                                                     onClick={(event: any) =>
                                                         handleClick(event, row.address)
                                                     }
@@ -681,7 +692,6 @@ export const RegisterTable = (props: IProps): JSX.Element => {
                                                         }),
                                                         px: 1
                                                     }}
-                                                    defaultValue={toHex(row.value)}
                                                     value={valueList[page * rowsPerPage + index]}
                                                     onChange={(e) => {
                                                         handleValueChange(e, page * rowsPerPage + index);

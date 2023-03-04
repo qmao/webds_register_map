@@ -3,6 +3,7 @@ import React from 'react';
 import { Divider, Stack, Container } from '@mui/material';
 import { RegisterData } from './RegisterData';
 import { RegisterTable } from './RegisterTable';
+import { RegisterProgress } from './RegisterProgress';
 
 interface IProps {
     rows: any;
@@ -11,6 +12,7 @@ interface IProps {
     onRowSelect: any;
     onRowUpdate: any;
     isLoading: any;
+    progress: any;
 }
 
 export const RegisterViewerContent = (props: IProps): JSX.Element => {
@@ -39,7 +41,14 @@ export const RegisterViewerContent = (props: IProps): JSX.Element => {
             </Container>
             <Divider orientation="vertical" sx={{ borderBottomWidth: 430 }} />
             <Container sx={{ width: '50%', height: 420, overflowY: 'auto' }}>
-                <RegisterData row={props.currentRow} />
+                {props.isLoading ? (
+                    <RegisterProgress
+                        progress={props.progress.current}
+                        total={props.progress.total}
+                    />
+                ) : (
+                        <RegisterData row={props.currentRow} />
+                    )}
             </Container>
         </Stack>
     );
