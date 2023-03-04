@@ -30,7 +30,7 @@ export const ShowExport = (data: any) => {
                         Object.assign(newRow, r);
                         try {
                             newRow['address'] = '0x' + r['address'].toString(16);
-                            newRow['value'] = r['value'];
+                            newRow['value'] = '0x' + r['value'].toString(16);
                             newRow['bits'] = JSON.parse(r['bits']);
                         } catch { }
                         return newRow;
