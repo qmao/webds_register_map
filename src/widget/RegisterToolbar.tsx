@@ -16,7 +16,7 @@ const exportBlob = (blob: Blob, filename: string) => {
     });
 };
 
-export const ShowExport = (data: any, value: any) => {
+export const ShowExport = (data: any) => {
     const fileName = 'RegisterMapExport';
     return (
         <Stack>
@@ -25,12 +25,12 @@ export const ShowExport = (data: any, value: any) => {
                 variant="outlined"
                 sx={{ fontSize: '14px' }}
                 onClick={() => {
-                    let newData: any = data.map((r: any, index: any) => {
+                    let newData: any = data.map((r: any) => {
                         let newRow: any = {};
                         Object.assign(newRow, r);
                         try {
                             newRow['address'] = '0x' + r['address'].toString(16);
-                            newRow['value'] = value[index];
+                            newRow['value'] = r['value'];
                             newRow['bits'] = JSON.parse(r['bits']);
                         } catch { }
                         return newRow;

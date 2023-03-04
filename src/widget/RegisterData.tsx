@@ -95,9 +95,7 @@ export const RegisterData = (props: any): JSX.Element => {
             let value: any = -1;
             let pdata = data[key]['Position'];
 
-            if (content.current === undefined) {
-                value = undefined;
-            } else if (pdata.length === 1) {
+            if (pdata.length === 1) {
                 position = pdata[0];
                 value = getBitRange(Number(content.current), pdata[0], pdata[0]);
             } else {
@@ -105,6 +103,9 @@ export const RegisterData = (props: any): JSX.Element => {
                 value = getBitRange(Number(content.current), pdata[0], pdata[1]);
             }
 
+            if (content.current === undefined) {
+                value = undefined;
+            }
             let d = createData(key, position, data[key]['Type'], value);
             rows.push(d);
             //console.log(

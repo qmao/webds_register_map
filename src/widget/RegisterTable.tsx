@@ -119,25 +119,25 @@ const headCells: readonly HeadCell[] = [
         disablePadding: true
     }
     /*,
-    {
-      id: 'description',
-      label: 'Description',
-      numeric: false,
-      disablePadding: true
-    },
-    {
-      id: 'bits',
-      label: 'Bits',
-      numeric: false,
-      disablePadding: true
-    },
-    {
-      id: 'modified',
-      label: 'Modified',
-      numeric: false,
-      disablePadding: true
-    }
-    */
+      {
+        id: 'description',
+        label: 'Description',
+        numeric: false,
+        disablePadding: true
+      },
+      {
+        id: 'bits',
+        label: 'Bits',
+        numeric: false,
+        disablePadding: true
+      },
+      {
+        id: 'modified',
+        label: 'Modified',
+        numeric: false,
+        disablePadding: true
+      }
+      */
 ];
 
 interface EnhancedTableProps {
@@ -284,7 +284,6 @@ export const RegisterTable = (props: IProps): JSX.Element => {
     const [rowsPerPage, setRowsPerPage] = useState(100);
     const [filterText, setFilterText] = useState('');
     const [displayList, setDisplayList] = useState([]);
-    const [valueList, setValueList] = useState<string[]>([]);
     const myRef = useRef<any>(null);
     const [searchIndex, setSearchIndex] = useState(0);
     const [currentRow, setCurrentRow] = useState<Data | undefined>(undefined);
@@ -325,11 +324,6 @@ export const RegisterTable = (props: IProps): JSX.Element => {
     };
 
     function updateDisplayList(l: any) {
-        setValueList(
-            l.map((r: any) => {
-                return toHex(r.value);
-            })
-        );
         setDisplayList(l);
 
         if (currentRow !== undefined) {
@@ -399,16 +393,10 @@ export const RegisterTable = (props: IProps): JSX.Element => {
         handleValueUpdate(value, row);
     };
 
-    const handleValueChange = (event: any, index: any) => {
+    const handleValueChange = (event: any, row: any) => {
         const value = event.target.value;
 
-        let newData: any = [];
-
-        Object.assign(newData, valueList);
-        newData[index] = value;
-        setValueList(newData);
-
-        console.log('handleValueChange', value, index);
+        handleValueUpdate(value, row);
     };
 
     const handleSearchKeyPress = (event: any) => {
@@ -583,7 +571,7 @@ export const RegisterTable = (props: IProps): JSX.Element => {
                             <Typography></Typography>
                         )}
                     <Stack direction="row" spacing={1}>
-                        {ShowExport(displayList, valueList)}
+                        {ShowExport(displayList)}
                         {getFilterInput()}
                         {getSearchInput()}
                     </Stack>
@@ -620,12 +608,12 @@ export const RegisterTable = (props: IProps): JSX.Element => {
                                                     }
                                                 }
                                                 /*,
-                                                '&.Mui-selected': {
-                                                  '&:hover': {
-                                                    backgroundColor: '#dfe999'
-                                                  }
-                                                }
-                                                */
+                                                                        '&.Mui-selected': {
+                                                                          '&:hover': {
+                                                                            backgroundColor: '#dfe999'
+                                                                          }
+                                                                        }
+                                                                        */
                                             }}
                                             key={row.address}
                                             data-index={row.address}
@@ -701,14 +689,14 @@ export const RegisterTable = (props: IProps): JSX.Element => {
                                                         fontSize: 10,
                                                         width: 90,
                                                         ...(row.modified > 0 && {
-                                                            bgcolor: 'primary.light'
+                                                            bgcolor: '#d8ffbf'
                                                         }),
                                                         px: 1
                                                     }}
                                                     disableUnderline
-                                                    value={valueList[page * rowsPerPage + index]}
+                                                    value={toHex(row.value)}
                                                     onChange={(e) => {
-                                                        handleValueChange(e, page * rowsPerPage + index);
+                                                        handleValueChange(e, row);
                                                     }}
                                                     onKeyPress={(e) => handleValueKeyPress(e, row)}
                                                     onBlur={(e) => handleValueBlur(e, row)}
