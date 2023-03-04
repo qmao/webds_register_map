@@ -306,7 +306,7 @@ export const Landing = (props: any): JSX.Element => {
                     setProgress({ current: 0, total: wd.length });
 
                     if (wd.length > 3) {
-                        startLongTask(ELongTask.Write, rd);
+                        startLongTask(ELongTask.Write, wd);
                     } else {
                         WriteRegisters(wd, false).then((data) => {
                             if (data) {

@@ -37,10 +37,6 @@ export async function WriteRegisters(
             method: 'POST'
         });
 
-        if (reply['status'].length !== 0) {
-            alert(JSON.stringify(reply['status']));
-        }
-
         let value = reply['data'];
         return Promise.resolve(value);
     } catch (e) {
