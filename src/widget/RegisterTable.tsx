@@ -341,9 +341,13 @@ export const RegisterTable = (props: IProps): JSX.Element => {
         filterList(filterText);
     }, [props.rows]);
 
+    useEffect(() => {
+        filterList(filterText);
+    }, [filterText]);
+
     useEffect(() => { }, []);
 
-    function applyFilter(wordToCompare: any) {
+    const applyFilter = (wordToCompare: any) => {
         return function (value: any) {
             return (
                 value.name.indexOf(wordToCompare) >= 0 ||
@@ -353,7 +357,7 @@ export const RegisterTable = (props: IProps): JSX.Element => {
                     value.description.indexOf(wordToCompare) >= 0)
             );
         };
-    }
+    };
 
     const filterList = (value: any) => {
         let newRows = props.rows.filter(applyFilter(value));
@@ -363,7 +367,6 @@ export const RegisterTable = (props: IProps): JSX.Element => {
     const handleFilterChange = (event: any) => {
         const value = event.target.value;
         setFilterText(value);
-        filterList(value);
     };
 
     const handleValueUpdate = (value: any, row: any) => {
