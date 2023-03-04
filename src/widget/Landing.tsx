@@ -51,13 +51,19 @@ export const Landing = (props: any): JSX.Element => {
         bits: '',
         modified: false
     });
+    const defaultList = useRef<IResponse[]>([]);
+
+    interface IResponse {
+        address: any;
+        value: any;
+    }
 
     // SSE START
     const eventSource = useRef<undefined | EventSource>(undefined);
     const eventError = useRef(false);
     const eventType = 'Register';
     const eventRoute = '/webds/register';
-    const sseData = useRef<IRegister[]>([]);
+    const sseData = useRef<IResponse[]>([]);
 
     const removeEvent = () => {
         const SSE_CLOSED = 2;
@@ -69,28 +75,38 @@ export const Landing = (props: any): JSX.Element => {
         }
     };
 
+    const updateToRow = (info: any) => {
+        let rows: any = rowData;
+        info.forEach((data: any) => {
+            if (rowData.length === 0) {
+                // during init, rowData not updated, use default list
+                rows = defaultList.current;
+            }
+            let r = rows.find((i: any) => i.address === data.address);
+            r!.value = data.value;
+            r!.modified = false;
+        });
+        let newRows: any = [];
+        Object.assign(newRows, rows);
+        setRowData(newRows);
+    };
+
     const eventHandler = (event: any) => {
         const data = JSON.parse(event.data);
 
         switch (data.status) {
             case 'run':
-                sseData.current[data.index].value = data.value;
-                if (data.index % 10 === 0) {
-                    setProgress({ current: data.index, total: sseData.current.length });
-                    let newRows: any = [];
-                    Object.assign(newRows, sseData.current);
-                    setRowData(newRows);
+                sseData.current.push({ address: data.address, value: data.value });
+                if (data.index % 20 === 0) {
+                    setProgress({ current: data.index, total: data.total });
+                    let info = sseData.current.splice(0, sseData.current.length);
+                    updateToRow(info);
                 }
                 break;
             case 'done':
             case 'terminate':
-                setProgress({
-                    current: sseData.current.length,
-                    total: sseData.current.length
-                });
-                let newRows: any = [];
-                Object.assign(newRows, sseData.current);
-                setRowData(newRows);
+                updateToRow(sseData.current);
+
                 removeEvent();
                 setLoading(false);
                 break;
@@ -167,8 +183,8 @@ export const Landing = (props: any): JSX.Element => {
         // for testing purpose only read first page
         //rd = rd.slice(0, 20);
 
-        sseData.current = registerList;
-
+        sseData.current = [];
+        defaultList.current = registerList;
         setRowData(registerList);
 
         startLongTask(ELongTask.Read, rd);
@@ -248,22 +264,26 @@ export const Landing = (props: any): JSX.Element => {
                         rd = selected;
                     }
                     setProgress({ current: 0, total: rd.length });
-                    ReadRegisters(rd, false).then((data) => {
-                        if (data) {
-                            Object.assign(newData, rowData);
+                    if (rd.length > 3) {
+                        startLongTask(ELongTask.Read, rd);
+                    } else {
+                        ReadRegisters(rd, false).then((data) => {
+                            if (data) {
+                                Object.assign(newData, rowData);
 
-                            rd.forEach((addr: any, index: any) => {
-                                let find = newData.find((r: any) => {
-                                    return r.address === addr;
+                                rd.forEach((addr: any, index: any) => {
+                                    let find = newData.find((r: any) => {
+                                        return r.address === addr;
+                                    });
+                                    find.value = data[index];
+                                    find.modified = false;
+                                    setCurrentRow(find);
                                 });
-                                find.value = data[index];
-                                find.modified = false;
-                                setCurrentRow(find);
-                            });
-                            setRowData(newData);
-                            setLoading(false);
-                        }
-                    });
+                                setRowData(newData);
+                                setLoading(false);
+                            }
+                        });
+                    }
                     break;
                 case EAction.WriteRegister:
                     if (selected.length === 0) {
@@ -284,22 +304,26 @@ export const Landing = (props: any): JSX.Element => {
                     }
 
                     setProgress({ current: 0, total: wd.length });
-                    WriteRegisters(wd, false).then((data) => {
-                        if (data) {
-                            Object.assign(newData, rowData);
-                            wd.forEach((w: any, index: any) => {
-                                let find = newData.find((r: any) => {
-                                    return r.address === w.address;
-                                });
-                                find.value = data[index];
-                                find.modified = false;
-                                setCurrentRow(find);
-                            });
-                            setRowData(newData);
-                            setLoading(false);
-                        }
-                    });
 
+                    if (wd.length > 3) {
+                        startLongTask(ELongTask.Write, rd);
+                    } else {
+                        WriteRegisters(wd, false).then((data) => {
+                            if (data) {
+                                Object.assign(newData, rowData);
+                                wd.forEach((w: any, index: any) => {
+                                    let find = newData.find((r: any) => {
+                                        return r.address === w.address;
+                                    });
+                                    find.value = data[index];
+                                    find.modified = false;
+                                    setCurrentRow(find);
+                                });
+                                setRowData(newData);
+                                setLoading(false);
+                            }
+                        });
+                    }
                     break;
                 case EAction.Terminate:
                     TerminateSSE().then(() => {
