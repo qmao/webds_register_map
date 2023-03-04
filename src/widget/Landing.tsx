@@ -198,30 +198,29 @@ export const Landing = (props: any): JSX.Element => {
 
             let newRow: any = [];
             Object.assign(newRow, target);
-
+            setCurrentRow(newRow);
             setRowData(newData);
             setLoading(false);
-
-            setCurrentRow(newRow);
         } else {
             alert('target not found');
         }
     }
 
+    /*
     function updateRow(r: any) {
-        let newRow: any = {
-            address: '',
-            block: '',
-            name: '',
-            value: '',
-            description: '',
-            bits: '',
-            modified: false
-        };
-        Object.assign(newRow, r);
-        onRowClick(newRow);
+      let newRow: any = {
+        address: '',
+        block: '',
+        name: '',
+        value: '',
+        description: '',
+        bits: '',
+        modified: false
+      };
+      Object.assign(newRow, r);
+      setCurrentRow(newRow);
     }
-
+  */
     function onAction(action: any) {
         let newData: any = [];
         let rd: any;
@@ -261,9 +260,8 @@ export const Landing = (props: any): JSX.Element => {
                                 });
                                 find.value = data[index];
                                 find.modified = false;
-                                updateRow(find);
+                                setCurrentRow(find);
                             });
-
                             setRowData(newData);
                             setLoading(false);
                         }
@@ -272,7 +270,10 @@ export const Landing = (props: any): JSX.Element => {
                 case EAction.WriteRegister:
                     if (selected.length === 0) {
                         wd = [
-                            { address: currentRow.address, value: Number(currentRow.value) }
+                            {
+                                address: currentRow.address,
+                                value: Number(currentRow.value)
+                            }
                         ];
                     } else {
                         let rs: any = rowData.filter((row) => {
@@ -294,7 +295,7 @@ export const Landing = (props: any): JSX.Element => {
                                 });
                                 find.value = data[index];
                                 find.modified = false;
-                                updateRow(find);
+                                setCurrentRow(find);
                             });
                             setRowData(newData);
                             setLoading(false);
