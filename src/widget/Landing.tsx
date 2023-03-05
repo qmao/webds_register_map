@@ -98,7 +98,7 @@ export const Landing = (props: any): JSX.Element => {
         switch (data.status) {
             case 'run':
                 sseData.current.push({ address: data.address, value: data.value });
-                if (data.index % 20 === 0) {
+                if (data.index !== 0 && data.index % 50 === 0) {
                     setProgress({ current: data.index, total: data.total });
                     let info = sseData.current.splice(0, sseData.current.length);
                     updateToRow(info);
