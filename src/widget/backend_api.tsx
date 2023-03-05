@@ -63,6 +63,24 @@ export async function GetJson(): Promise<string> {
     }
 }
 
+export async function CheckFWMode(): Promise<string> {
+    var dataToSend = {
+        command: 'check_mode'
+    };
+
+    try {
+        const reply = await requestAPI<any>('register', {
+            body: JSON.stringify(dataToSend),
+            method: 'POST'
+        });
+
+        return Promise.resolve(reply);
+    } catch (e) {
+        console.error(`Error on POST ${dataToSend}.\n${e}`);
+        return Promise.reject((e as Error).message);
+    }
+}
+
 export async function TerminateSSE(): Promise<string | undefined> {
     var dataToSend = {
         command: 'terminate'

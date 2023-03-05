@@ -10,7 +10,8 @@ import {
     ReadRegisters,
     WriteRegisters,
     GetJson,
-    TerminateSSE
+    TerminateSSE,
+    CheckFWMode
 } from './backend_api';
 
 const ELongTask = {
@@ -339,9 +340,14 @@ export const Landing = (props: any): JSX.Element => {
 
     useEffect(() => {
         setLoading(true);
-        GetJson().then((data) => {
-            parseRegisterJson(JSON.parse(data));
-        });
+        GetJson()
+            .then((data) => {
+                parseRegisterJson(JSON.parse(data));
+                CheckFWMode();
+            })
+            .catch((e) => {
+                alert(e);
+            });
     }, []);
 
     return (
