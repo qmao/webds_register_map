@@ -115,7 +115,7 @@ export const Landing = (props: any): JSX.Element => {
                 updateToRow(info);
 
                 removeEvent();
-                showMessage('success', 'data.status');
+                showMessage('success', data.status);
                 setLoading(false);
                 break;
         }
