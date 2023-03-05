@@ -58,6 +58,7 @@ export const Landing = (props: any): JSX.Element => {
     });
     const defaultList = useRef<IResponse[]>([]);
     const defaultRegisterValues = useRef([]);
+    const sseResult = useRef<string[]>([]);
 
     interface IResponse {
         address: any;
@@ -103,6 +104,9 @@ export const Landing = (props: any): JSX.Element => {
         switch (data.status) {
             case 'run':
                 sseData.current.push({ address: data.address, value: data.value });
+                if (data.value === null) {
+                    sseResult.current.push(data.address.toString(16));
+                }
                 if (data.index !== 0 && data.index % 50 === 0) {
                     setProgress({ current: data.index, total: data.total });
                     let info = sseData.current.splice(0, sseData.current.length);
@@ -115,7 +119,11 @@ export const Landing = (props: any): JSX.Element => {
                 updateToRow(info);
 
                 removeEvent();
-                showMessage('success', data.status);
+                if (sseResult.current.length === 0) {
+                    showMessage('success', data.status);
+                } else {
+                    showMessage('warning', sseResult.current.toString());
+                }
                 setLoading(false);
                 break;
         }
@@ -145,6 +153,7 @@ export const Landing = (props: any): JSX.Element => {
     }
 
     function startLongTask(task: any, data: any) {
+        sseResult.current = [];
         setProgress({ current: 0, total: data.length });
 
         // start sse event
@@ -257,8 +266,35 @@ export const Landing = (props: any): JSX.Element => {
       setCurrentRow(newRow);
     }
   */
-    function onAction(action: any) {
+
+    function onDataProccess(source: any, data: any) {
         let newData: any = [];
+        let error: any = [];
+        if (data) {
+            Object.assign(newData, rowData);
+
+            source.forEach((addr: any, index: any) => {
+                let find = newData.find((r: any) => {
+                    return r.address === addr;
+                });
+                if (data[index] === null) {
+                    error.push('0x' + find.address.toString(16));
+                }
+                find.value = data[index];
+                find.modified = false;
+                setCurrentRow(find);
+            });
+            setRowData(newData);
+            if (error.length === 0) {
+                showMessage('success', 'success');
+            } else {
+                showMessage('warning', error.toString());
+            }
+            setLoading(false);
+        }
+    }
+
+    function onAction(action: any) {
         let rd: any;
         let wd: any;
         setLoading(true);
@@ -291,21 +327,7 @@ export const Landing = (props: any): JSX.Element => {
                     } else {
                         ReadRegisters(rd, false)
                             .then((data) => {
-                                if (data) {
-                                    Object.assign(newData, rowData);
-
-                                    rd.forEach((addr: any, index: any) => {
-                                        let find = newData.find((r: any) => {
-                                            return r.address === addr;
-                                        });
-                                        find.value = data[index];
-                                        find.modified = false;
-                                        setCurrentRow(find);
-                                    });
-                                    setRowData(newData);
-                                    showMessage('success', 'success');
-                                    setLoading(false);
-                                }
+                                onDataProccess(rd, data);
                             })
                             .catch((e: any) => {
                                 setLoading(false);
@@ -338,20 +360,10 @@ export const Landing = (props: any): JSX.Element => {
                     } else {
                         WriteRegisters(wd, false)
                             .then((data) => {
-                                if (data) {
-                                    Object.assign(newData, rowData);
-                                    wd.forEach((w: any, index: any) => {
-                                        let find = newData.find((r: any) => {
-                                            return r.address === w.address;
-                                        });
-                                        find.value = data[index];
-                                        find.modified = false;
-                                        setCurrentRow(find);
-                                    });
-                                    setRowData(newData);
-                                    setLoading(false);
-                                    showMessage('success', 'success');
-                                }
+                                let input = wd.map((w: any) => {
+                                    return w.address;
+                                });
+                                onDataProccess(input, data);
                             })
                             .catch((e: any) => {
                                 showMessage('error', e);
