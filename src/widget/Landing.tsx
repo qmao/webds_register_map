@@ -53,6 +53,7 @@ export const Landing = (props: any): JSX.Element => {
         modified: false
     });
     const defaultList = useRef<IResponse[]>([]);
+    const defaultRegisterValues = useRef([]);
 
     interface IResponse {
         address: any;
@@ -106,7 +107,8 @@ export const Landing = (props: any): JSX.Element => {
                 break;
             case 'done':
             case 'terminate':
-                updateToRow(sseData.current);
+                let info = sseData.current.splice(0, sseData.current.length);
+                updateToRow(info);
 
                 removeEvent();
                 setLoading(false);
@@ -188,7 +190,7 @@ export const Landing = (props: any): JSX.Element => {
         defaultList.current = registerList;
         setRowData(registerList);
 
-        startLongTask(ELongTask.Read, rd);
+        return rd;
     }
 
     function onRowClick(r: any) {
@@ -255,7 +257,7 @@ export const Landing = (props: any): JSX.Element => {
                         return { address: d.address, value: Number(d.value) };
                     });
 
-                    startLongTask(ELongTask.Write, rd);
+                    startLongTask(ELongTask.Write, wd);
 
                     break;
                 case EAction.ReadRegister:
@@ -268,22 +270,26 @@ export const Landing = (props: any): JSX.Element => {
                     if (rd.length > 3) {
                         startLongTask(ELongTask.Read, rd);
                     } else {
-                        ReadRegisters(rd, false).then((data) => {
-                            if (data) {
-                                Object.assign(newData, rowData);
+                        ReadRegisters(rd, false)
+                            .then((data) => {
+                                if (data) {
+                                    Object.assign(newData, rowData);
 
-                                rd.forEach((addr: any, index: any) => {
-                                    let find = newData.find((r: any) => {
-                                        return r.address === addr;
+                                    rd.forEach((addr: any, index: any) => {
+                                        let find = newData.find((r: any) => {
+                                            return r.address === addr;
+                                        });
+                                        find.value = data[index];
+                                        find.modified = false;
+                                        setCurrentRow(find);
                                     });
-                                    find.value = data[index];
-                                    find.modified = false;
-                                    setCurrentRow(find);
-                                });
-                                setRowData(newData);
+                                    setRowData(newData);
+                                    setLoading(false);
+                                }
+                            })
+                            .catch(() => {
                                 setLoading(false);
-                            }
-                        });
+                            });
                     }
                     break;
                 case EAction.WriteRegister:
@@ -309,21 +315,25 @@ export const Landing = (props: any): JSX.Element => {
                     if (wd.length > 3) {
                         startLongTask(ELongTask.Write, wd);
                     } else {
-                        WriteRegisters(wd, false).then((data) => {
-                            if (data) {
-                                Object.assign(newData, rowData);
-                                wd.forEach((w: any, index: any) => {
-                                    let find = newData.find((r: any) => {
-                                        return r.address === w.address;
+                        WriteRegisters(wd, false)
+                            .then((data) => {
+                                if (data) {
+                                    Object.assign(newData, rowData);
+                                    wd.forEach((w: any, index: any) => {
+                                        let find = newData.find((r: any) => {
+                                            return r.address === w.address;
+                                        });
+                                        find.value = data[index];
+                                        find.modified = false;
+                                        setCurrentRow(find);
                                     });
-                                    find.value = data[index];
-                                    find.modified = false;
-                                    setCurrentRow(find);
-                                });
-                                setRowData(newData);
+                                    setRowData(newData);
+                                    setLoading(false);
+                                }
+                            })
+                            .catch(() => {
                                 setLoading(false);
-                            }
-                        });
+                            });
                     }
                     break;
                 case EAction.Terminate:
@@ -342,11 +352,15 @@ export const Landing = (props: any): JSX.Element => {
         setLoading(true);
         GetJson()
             .then((data) => {
-                parseRegisterJson(JSON.parse(data));
-                CheckFWMode();
+                defaultRegisterValues.current = parseRegisterJson(JSON.parse(data));
+                return CheckFWMode();
+            })
+            .then(() => {
+                startLongTask(ELongTask.Read, defaultRegisterValues.current);
             })
             .catch((e) => {
                 alert(e);
+                setLoading(false);
             });
     }, []);
 
