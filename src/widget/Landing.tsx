@@ -13,6 +13,7 @@ import {
     TerminateSSE,
     CheckFWMode
 } from './backend_api';
+import { Alert, AlertColor, Snackbar } from '@mui/material';
 
 const ELongTask = {
     Read: 0,
@@ -35,6 +36,9 @@ interface IProgress {
 }
 
 export const Landing = (props: any): JSX.Element => {
+    const [openAlert, setOpenAlert] = useState(false);
+    const [alertType, setAlertType] = useState<AlertColor>('success');
+    const [alertInfo, setAlertInfo] = useState('');
     const [rowData, setRowData] = useState<IRegister[]>([]);
     const [isLoading, setLoading] = useState(true);
     const [selected, setSelected] = useState<IRegister[]>([]);
@@ -111,6 +115,7 @@ export const Landing = (props: any): JSX.Element => {
                 updateToRow(info);
 
                 removeEvent();
+                showMessage('success', 'data.status');
                 setLoading(false);
                 break;
         }
@@ -133,6 +138,12 @@ export const Landing = (props: any): JSX.Element => {
     };
     // SSE END
 
+    function showMessage(atype: any, info: any) {
+        setAlertInfo(info);
+        setAlertType(atype);
+        setOpenAlert(true);
+    }
+
     function startLongTask(task: any, data: any) {
         setProgress({ current: 0, total: data.length });
 
@@ -141,14 +152,22 @@ export const Landing = (props: any): JSX.Element => {
 
         switch (task) {
             case ELongTask.Read:
-                ReadRegisters(data, true).then((ret) => {
-                    console.log('STARTING SSE BACKEND READ', ret);
-                });
+                ReadRegisters(data, true)
+                    .then((ret) => {
+                        console.log('STARTING SSE BACKEND READ', ret);
+                    })
+                    .catch((e: any) => {
+                        showMessage('error', e);
+                    });
                 break;
             case ELongTask.Write:
-                WriteRegisters(data, true).then((ret) => {
-                    console.log('STARTING SSE BACKEND WRITE', ret);
-                });
+                WriteRegisters(data, true)
+                    .then((ret) => {
+                        console.log('STARTING SSE BACKEND WRITE', ret);
+                    })
+                    .catch((e: any) => {
+                        showMessage('error', e);
+                    });
                 break;
         }
     }
@@ -219,7 +238,7 @@ export const Landing = (props: any): JSX.Element => {
             setRowData(newData);
             setLoading(false);
         } else {
-            alert('target not found');
+            showMessage('error', 'target not found');
         }
     }
 
@@ -284,11 +303,13 @@ export const Landing = (props: any): JSX.Element => {
                                         setCurrentRow(find);
                                     });
                                     setRowData(newData);
+                                    showMessage('success', 'success');
                                     setLoading(false);
                                 }
                             })
-                            .catch(() => {
+                            .catch((e: any) => {
                                 setLoading(false);
+                                showMessage('error', e);
                             });
                     }
                     break;
@@ -329,9 +350,11 @@ export const Landing = (props: any): JSX.Element => {
                                     });
                                     setRowData(newData);
                                     setLoading(false);
+                                    showMessage('success', 'success');
                                 }
                             })
-                            .catch(() => {
+                            .catch((e: any) => {
+                                showMessage('error', e);
                                 setLoading(false);
                             });
                     }
@@ -342,8 +365,8 @@ export const Landing = (props: any): JSX.Element => {
                     });
                     break;
             }
-        } catch {
-            alert('error');
+        } catch (e) {
+            showMessage('error', e);
             setLoading(false);
         }
     }
@@ -358,11 +381,22 @@ export const Landing = (props: any): JSX.Element => {
             .then(() => {
                 startLongTask(ELongTask.Read, defaultRegisterValues.current);
             })
-            .catch((e) => {
-                alert(e);
+            .catch((e: any) => {
+                showMessage('error', e);
                 setLoading(false);
             });
     }, []);
+
+    const handleClose = (
+        event?: React.SyntheticEvent | Event,
+        reason?: string
+    ) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+
+        setOpenAlert(false);
+    };
 
     return (
         <Canvas title="Register Map" sx={{ width: 1200 }}>
@@ -387,6 +421,20 @@ export const Landing = (props: any): JSX.Element => {
             >
                 <RegisterViewerControl onAction={onAction} isLoading={isLoading} />
             </Controls>
+            <Snackbar
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                open={openAlert}
+                autoHideDuration={3000}
+                onClose={handleClose}
+            >
+                <Alert
+                    onClose={handleClose}
+                    severity={alertType}
+                    sx={{ width: '100%' }}
+                >
+                    {alertInfo}
+                </Alert>
+            </Snackbar>
         </Canvas>
     );
 };
