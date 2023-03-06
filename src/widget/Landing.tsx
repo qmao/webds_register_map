@@ -41,6 +41,8 @@ export const Landing = (props: any): JSX.Element => {
     const [alertInfo, setAlertInfo] = useState('');
     const [rowData, setRowData] = useState<IRegister[]>([]);
     const [isLoading, setLoading] = useState(true);
+    const [isPending, setPending] = useState(false);
+    const [isInitDone, setInitDone] = useState(false);
     const [selected, setSelected] = useState<IRegister[]>([]);
     const [progress, setProgress] = useState<IProgress>({
         current: 0,
@@ -153,6 +155,7 @@ export const Landing = (props: any): JSX.Element => {
     }
 
     function startLongTask(task: any, data: any) {
+        setLoading(true);
         sseResult.current = [];
         setProgress({ current: 0, total: data.length });
 
@@ -164,18 +167,22 @@ export const Landing = (props: any): JSX.Element => {
                 ReadRegisters(data, true)
                     .then((ret) => {
                         console.log('STARTING SSE BACKEND READ', ret);
+                        setPending(false);
                     })
                     .catch((e: any) => {
                         showMessage('error', e);
+                        setPending(false);
                     });
                 break;
             case ELongTask.Write:
                 WriteRegisters(data, true)
                     .then((ret) => {
                         console.log('STARTING SSE BACKEND WRITE', ret);
+                        setPending(false);
                     })
                     .catch((e: any) => {
                         showMessage('error', e);
+                        setPending(false);
                     });
                 break;
         }
@@ -252,20 +259,20 @@ export const Landing = (props: any): JSX.Element => {
     }
 
     /*
-    function updateRow(r: any) {
-      let newRow: any = {
-        address: '',
-        block: '',
-        name: '',
-        value: '',
-        description: '',
-        bits: '',
-        modified: false
-      };
-      Object.assign(newRow, r);
-      setCurrentRow(newRow);
-    }
-  */
+      function updateRow(r: any) {
+        let newRow: any = {
+          address: '',
+          block: '',
+          name: '',
+          value: '',
+          description: '',
+          bits: '',
+          modified: false
+        };
+        Object.assign(newRow, r);
+        setCurrentRow(newRow);
+      }
+    */
 
     function onDataProccess(source: any, data: any) {
         let newData: any = [];
@@ -297,7 +304,7 @@ export const Landing = (props: any): JSX.Element => {
     function onAction(action: any) {
         let rd: any;
         let wd: any;
-        setLoading(true);
+        setPending(true);
         try {
             switch (action) {
                 case EAction.ReadAll:
@@ -328,10 +335,11 @@ export const Landing = (props: any): JSX.Element => {
                         ReadRegisters(rd, false)
                             .then((data) => {
                                 onDataProccess(rd, data);
+                                setPending(false);
                             })
                             .catch((e: any) => {
-                                setLoading(false);
                                 showMessage('error', e);
+                                setPending(false);
                             });
                     }
                     break;
@@ -364,27 +372,36 @@ export const Landing = (props: any): JSX.Element => {
                                     return w.address;
                                 });
                                 onDataProccess(input, data);
+                                setPending(false);
                             })
                             .catch((e: any) => {
                                 showMessage('error', e);
-                                setLoading(false);
+                                setPending(false);
                             });
                     }
                     break;
                 case EAction.Terminate:
-                    TerminateSSE().then(() => {
-                        setLoading(false);
-                    });
+                    TerminateSSE()
+                        .then(() => {
+                            showMessage('success', action);
+                            setLoading(false);
+                            setPending(false);
+                        })
+                        .catch((e) => {
+                            showMessage('error', e);
+                            setLoading(false);
+                            setPending(false);
+                        });
                     break;
             }
         } catch (e) {
             showMessage('error', e);
             setLoading(false);
+            setPending(false);
         }
     }
 
     useEffect(() => {
-        setLoading(true);
         GetJson()
             .then((data) => {
                 defaultRegisterValues.current = parseRegisterJson(JSON.parse(data));
@@ -392,10 +409,12 @@ export const Landing = (props: any): JSX.Element => {
             })
             .then(() => {
                 startLongTask(ELongTask.Read, defaultRegisterValues.current);
+                setInitDone(true);
             })
             .catch((e: any) => {
                 showMessage('error', e);
                 setLoading(false);
+                setInitDone(true);
             });
     }, []);
 
@@ -413,15 +432,17 @@ export const Landing = (props: any): JSX.Element => {
     return (
         <Canvas title="Register Map" sx={{ width: 1200 }}>
             <Content>
-                <RegisterViewerContent
-                    currentRow={currentRow}
-                    rows={rowData}
-                    onRowClick={onRowClick}
-                    onRowSelect={onRowSelect}
-                    onRowUpdate={onRowUpdate}
-                    isLoading={isLoading}
-                    progress={progress}
-                />
+                {isInitDone && (
+                    <RegisterViewerContent
+                        currentRow={currentRow}
+                        rows={rowData}
+                        onRowClick={onRowClick}
+                        onRowSelect={onRowSelect}
+                        onRowUpdate={onRowUpdate}
+                        isLoading={isLoading}
+                        progress={progress}
+                    />
+                )}
             </Content>
             <Controls
                 sx={{
@@ -431,7 +452,13 @@ export const Landing = (props: any): JSX.Element => {
                     justifyContent: 'center'
                 }}
             >
-                <RegisterViewerControl onAction={onAction} isLoading={isLoading} />
+                {isInitDone && (
+                    <RegisterViewerControl
+                        onAction={onAction}
+                        isLoading={isLoading}
+                        isPending={isPending}
+                    />
+                )}
             </Controls>
             <Snackbar
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}

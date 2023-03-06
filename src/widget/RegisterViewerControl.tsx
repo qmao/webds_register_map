@@ -5,6 +5,7 @@ import { Button, Stack } from '@mui/material';
 
 interface IProps {
     isLoading: any;
+    isPending: any;
     onAction: any;
 }
 
@@ -49,18 +50,27 @@ export const RegisterViewerControl = (props: IProps): JSX.Element => {
 
     return (
         <Stack direction="row" spacing={3}>
-            {props.isLoading ? (
-                <RegisterButton onClick={terminate}>Terminate</RegisterButton>
-            ) : (
-                    <>
-                        <RegisterButton onClick={readRegister}>Read Register</RegisterButton>
-                        <RegisterButton onClick={writeRegister}>
-                            Write Register
+            {props.isLoading && (
+                <RegisterButton disabled={props.isPending} onClick={terminate}>
+                    Terminate
+                </RegisterButton>
+            )}
+            {props.isLoading === false && (
+                <>
+                    <RegisterButton disabled={props.isPending} onClick={readRegister}>
+                        Read Register
           </RegisterButton>
-                        <RegisterButton onClick={readAll}>Read All</RegisterButton>
-                        <RegisterButton onClick={writeAll}>Write All</RegisterButton>
-                    </>
-                )}
+                    <RegisterButton disabled={props.isPending} onClick={writeRegister}>
+                        Write Register
+          </RegisterButton>
+                    <RegisterButton disabled={props.isPending} onClick={readAll}>
+                        Read All
+          </RegisterButton>
+                    <RegisterButton disabled={props.isPending} onClick={writeAll}>
+                        Write All
+          </RegisterButton>
+                </>
+            )}
         </Stack>
     );
 };
