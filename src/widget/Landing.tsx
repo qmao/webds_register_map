@@ -14,6 +14,7 @@ import {
     CheckFWMode
 } from './backend_api';
 import { Alert, AlertColor, Snackbar } from '@mui/material';
+//import { demo_data } from './demo_data';
 
 const ELongTask = {
     Read: 0,
@@ -49,18 +50,11 @@ export const Landing = (props: any): JSX.Element => {
         total: 0
     });
     //const [selected, setSelected] = useState<IRegister[]>([]);
-    const [currentRow, setCurrentRow] = useState<IRegister>({
-        address: '',
-        block: '',
-        name: '',
-        value: '',
-        description: '',
-        bits: '',
-        modified: false
-    });
+
     const defaultList = useRef<IResponse[]>([]);
     const defaultRegisterValues = useRef([]);
     const sseResult = useRef<string[]>([]);
+    const currentRow = useRef<IRegister | undefined>(undefined);
 
     interface IResponse {
         address: any;
@@ -173,6 +167,7 @@ export const Landing = (props: any): JSX.Element => {
                         showMessage('error', e);
                         setPending(false);
                     });
+
                 break;
             case ELongTask.Write:
                 WriteRegisters(data, true)
@@ -229,7 +224,7 @@ export const Landing = (props: any): JSX.Element => {
     }
 
     function onRowClick(r: any) {
-        setCurrentRow(r);
+        currentRow.current = r;
     }
 
     function onRowSelect(select: any) {
@@ -250,7 +245,7 @@ export const Landing = (props: any): JSX.Element => {
 
             let newRow: any = [];
             Object.assign(newRow, target);
-            setCurrentRow(newRow);
+            currentRow.current = newRow;
             setRowData(newData);
             setLoading(false);
         } else {
@@ -259,20 +254,20 @@ export const Landing = (props: any): JSX.Element => {
     }
 
     /*
-      function updateRow(r: any) {
-        let newRow: any = {
-          address: '',
-          block: '',
-          name: '',
-          value: '',
-          description: '',
-          bits: '',
-          modified: false
-        };
-        Object.assign(newRow, r);
-        setCurrentRow(newRow);
-      }
-    */
+    function updateRow(r: any) {
+      let newRow: any = {
+        address: '',
+        block: '',
+        name: '',
+        value: '',
+        description: '',
+        bits: '',
+        modified: false
+      };
+      Object.assign(newRow, r);
+      setCurrentRow(newRow);
+    }
+  */
 
     function onDataProccess(source: any, data: any) {
         let newData: any = [];
@@ -289,7 +284,7 @@ export const Landing = (props: any): JSX.Element => {
                 }
                 find.value = data[index];
                 find.modified = false;
-                setCurrentRow(find);
+                currentRow.current = find;
             });
             setRowData(newData);
             if (error.length === 0) {
@@ -302,8 +297,8 @@ export const Landing = (props: any): JSX.Element => {
     }
 
     function onAction(action: any) {
-        let rd: any;
-        let wd: any;
+        let rd: any = [];
+        let wd: any = [];
         setPending(true);
         try {
             switch (action) {
@@ -324,7 +319,13 @@ export const Landing = (props: any): JSX.Element => {
                     break;
                 case EAction.ReadRegister:
                     if (selected.length === 0) {
-                        rd = [currentRow.address];
+                        if (currentRow.current === undefined) {
+                            showMessage('error', 'please select at least one register');
+                            setPending(false);
+                            setLoading(false);
+                            return;
+                        }
+                        rd = [currentRow.current.address];
                     } else {
                         rd = selected;
                     }
@@ -345,10 +346,17 @@ export const Landing = (props: any): JSX.Element => {
                     break;
                 case EAction.WriteRegister:
                     if (selected.length === 0) {
+                        if (currentRow.current === undefined) {
+                            showMessage('error', 'please select at least one register');
+                            setPending(false);
+                            setLoading(false);
+                            return;
+                        }
+
                         wd = [
                             {
-                                address: currentRow.address,
-                                value: Number(currentRow.value)
+                                address: currentRow.current.address,
+                                value: Number(currentRow.current.value)
                             }
                         ];
                     } else {
@@ -383,12 +391,10 @@ export const Landing = (props: any): JSX.Element => {
                 case EAction.Terminate:
                     TerminateSSE()
                         .then(() => {
-                            showMessage('success', action);
                             setLoading(false);
                             setPending(false);
                         })
-                        .catch((e) => {
-                            showMessage('error', e);
+                        .catch((e: any) => {
                             setLoading(false);
                             setPending(false);
                         });
@@ -397,7 +403,6 @@ export const Landing = (props: any): JSX.Element => {
         } catch (e) {
             showMessage('error', e);
             setLoading(false);
-            setPending(false);
         }
     }
 
@@ -412,6 +417,17 @@ export const Landing = (props: any): JSX.Element => {
                 setInitDone(true);
             })
             .catch((e: any) => {
+                if (false) {
+                    //DEBUG CODE START
+                    /*
+                    defaultRegisterValues.current = parseRegisterJson(demo_data);
+                    defaultList.current.forEach((r: any) => {
+                      r.value = r.address;
+                    });
+                    setRowData(defaultList.current);
+                    */
+                    //DEBUG CODE END
+                }
                 showMessage('error', e);
                 setLoading(false);
                 setInitDone(true);
@@ -434,13 +450,12 @@ export const Landing = (props: any): JSX.Element => {
             <Content>
                 {isInitDone && (
                     <RegisterViewerContent
-                        currentRow={currentRow}
                         rows={rowData}
-                        onRowClick={onRowClick}
                         onRowSelect={onRowSelect}
                         onRowUpdate={onRowUpdate}
                         isLoading={isLoading}
                         progress={progress}
+                        onRowClick={onRowClick}
                     />
                 )}
             </Content>

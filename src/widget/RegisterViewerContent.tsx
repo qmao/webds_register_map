@@ -1,55 +1,104 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import { Divider, Stack, Container } from '@mui/material';
 import { RegisterData } from './RegisterData';
-import { RegisterTable } from './RegisterTable';
+import { MemoizeRegisterTable } from './RegisterTable';
 import { RegisterProgress } from './RegisterProgress';
+import { RegisterFilter } from './RegisterFilter';
 
 interface IProps {
-    rows: any;
-    currentRow: any;
-    onRowClick: any;
-    onRowSelect: any;
-    onRowUpdate: any;
-    isLoading: any;
-    progress: any;
+  rows: any;
+  onRowSelect: any;
+  onRowUpdate: any;
+  isLoading: any;
+  progress: any;
+  onRowClick: any;
 }
 
 export const RegisterViewerContent = (props: IProps): JSX.Element => {
-    function onRowClick(row: any) {
-        props.onRowClick(row);
-    }
+  const [isFilterPage, setFilterPage] = useState(false);
+  const [currentRow, setCurrentRow] = useState({
+    address: '',
+    block: '',
+    name: '',
+    value: '',
+    description: '',
+    bits: '',
+    modified: false
+  });
+  const [filter, setFilter] = useState([]);
 
-    function onRowSelect(select: any) {
-        props.onRowSelect(select);
-    }
+  function onRowClick(row: any) {
+    setCurrentRow(row);
+    props.onRowClick(row);
+  }
 
-    function onRowUpdate(row: any) {
-        props.onRowUpdate(row);
-    }
+  function onRowSelect(select: any) {
+    setFilterPage(false);
+    props.onRowSelect(select);
+  }
 
-    return (
-        <Stack direction="row">
-            <Container sx={{ width: '50%' }}>
-                <RegisterTable
-                    rows={props.rows}
-                    onRowClick={onRowClick}
-                    onRowSelect={onRowSelect}
-                    onRowUpdate={onRowUpdate}
-                    isLoading={props.isLoading}
-                />
-            </Container>
-            <Divider orientation="vertical" sx={{ borderBottomWidth: 430 }} />
-            <Container sx={{ width: '50%', height: 420, overflowY: 'auto' }}>
-                {props.isLoading && props.progress.total > 1 ? (
-                    <RegisterProgress
-                        progress={props.progress.current}
-                        total={props.progress.total}
-                    />
-                ) : (
-                        <RegisterData row={props.currentRow} />
-                    )}
-            </Container>
+  function onRowUpdate(row: any) {
+    props.onRowUpdate(row);
+  }
+
+  function onFilterClick() {
+    setFilterPage(!isFilterPage);
+  }
+
+  function onFilterUpdate(filter: any) {
+    setFilter(filter);
+  }
+
+  return (
+    <Stack direction="row">
+      <Container sx={{ width: '50%' }}>
+        {true && (
+          <MemoizeRegisterTable
+            rows={props.rows}
+            onRowClick={onRowClick}
+            onRowSelect={onRowSelect}
+            onRowUpdate={onRowUpdate}
+            isLoading={props.isLoading}
+            onFilterClick={onFilterClick}
+            filter={filter}
+          />
+        )}
+      </Container>
+      <Divider orientation="vertical" sx={{ borderBottomWidth: 430 }} />
+      <Container sx={{ width: '50%', height: 420, overflowY: 'auto' }}>
+        <Stack sx={{ display: isFilterPage ? 'block' : 'none' }}>
+          <RegisterFilter
+            data={props.rows}
+            onClose={() => {
+              setFilterPage(false);
+            }}
+            onFilterUpdate={(filter: any) => onFilterUpdate(filter)}
+          />
         </Stack>
-    );
+        <Stack
+          alignItems="center"
+          sx={{
+            height: '100%',
+            display:
+              !isFilterPage && props.isLoading && props.progress.total > 1
+                ? 'block'
+                : 'none'
+          }}
+        >
+          <RegisterProgress
+            progress={props.progress.current}
+            total={props.progress.total}
+          />
+        </Stack>
+        <Stack
+          sx={{
+            display: !isFilterPage && !props.isLoading ? 'block' : 'none'
+          }}
+        >
+          <RegisterData row={currentRow} />
+        </Stack>
+      </Container>
+    </Stack>
+  );
 };
