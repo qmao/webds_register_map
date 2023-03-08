@@ -19,7 +19,7 @@ namespace Attributes {
   export const id = "webds_register_map_widget";
   export const label = "Register Map";
   export const caption = "Register Map";
-  export const category = "DSDK - Applications";
+  export const category = "Device - Assessment";
   export const rank = 999;
 }
 
