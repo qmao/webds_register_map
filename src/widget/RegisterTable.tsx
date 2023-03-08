@@ -592,6 +592,7 @@ export const RegisterTable = (props: IProps): JSX.Element => {
                 >
                     {showValueInput === row.address && (
                         <Input
+                            disabled={props.isLoading}
                             key={`register-table-cell-value-input-${row.address}`}
                             sx={{
                                 fontSize: 10,
@@ -605,6 +606,7 @@ export const RegisterTable = (props: IProps): JSX.Element => {
                     )}
 
                     <Input
+                        disabled={props.isLoading}
                         key={`register-table-cell-value-input-default-${row.address}`}
                         sx={{
                             fontSize: 10,
