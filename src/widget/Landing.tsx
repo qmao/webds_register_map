@@ -412,7 +412,8 @@ export const Landing = (props: any): JSX.Element => {
                 defaultRegisterValues.current = parseRegisterJson(JSON.parse(data));
                 return CheckFWMode();
             })
-            .then(() => {
+            .then((mode: any) => {
+                showMessage('success', mode);
                 startLongTask(ELongTask.Read, defaultRegisterValues.current);
                 setInitDone(true);
             })
