@@ -498,20 +498,21 @@ export const RegisterTable = (props: IProps): JSX.Element => {
         const labelId = `enhanced-table-checkbox-${row.address}`;
         return (
             <TableRow
+                /*
                 sx={{
-                    '&.MuiTableRow-hover': {
-                        '&:hover': {
-                            backgroundColor: '#dfeff7'
-                        }
+                  '&.MuiTableRow-hover': {
+                    '&:hover': {
+                      backgroundColor: 'canvas'
                     }
-                    /*,
-                        '&.Mui-selected': {
-                          '&:hover': {
-                            backgroundColor: '#dfe999'
-                          }
+                  }
+                  ,
+                      '&.Mui-selected': {
+                        '&:hover': {
+                          backgroundColor: '#dfe999'
                         }
-                      */
+                      }  
                 }}
+                */
                 key={`register-table-row-${row.address}`}
                 data-index={row.address}
                 onClick={(event: any) => handleFocus(event, row)}
@@ -585,7 +586,7 @@ export const RegisterTable = (props: IProps): JSX.Element => {
                             /* */
                         },
                         ...(row.modified > 0 && {
-                            bgcolor: '#d8ffbf'
+                            bgcolor: 'custom.progress'
                         })
                     }}
                     align="left"
