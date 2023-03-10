@@ -75,7 +75,6 @@ export const Landing = (props: any): JSX.Element => {
             eventSource.current!.close();
             eventSource.current = undefined;
             console.log('SSE EVENT IS REMOVED');
-            setLoading(false);
         }
     };
 
@@ -129,7 +128,8 @@ export const Landing = (props: any): JSX.Element => {
     const errorHandler = (error: any) => {
         eventError.current = true;
         removeEvent();
-        console.error(`Error on GET ${eventRoute}\n${error}`);
+        setLoading(false);
+        showMessage('error', `Error on GET ${eventRoute}`);
     };
 
     const addEvent = () => {
