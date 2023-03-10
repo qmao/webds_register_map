@@ -75,6 +75,7 @@ export const Landing = (props: any): JSX.Element => {
             eventSource.current!.close();
             eventSource.current = undefined;
             console.log('SSE EVENT IS REMOVED');
+            setLoading(false);
         }
     };
 
