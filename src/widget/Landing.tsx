@@ -151,16 +151,17 @@ export const Landing = (props: any): JSX.Element => {
 
     function startLongTask(task: any, data: any) {
         setLoading(true);
-        sseResult.current = [];
         setProgress({ current: 0, total: data.length });
-
-        // start sse event
-        addEvent();
 
         switch (task) {
             case ELongTask.Read:
                 ReadRegisters(data, true)
                     .then((ret) => {
+                        sseData.current = [];
+                        sseResult.current = [];
+                        // start sse event
+                        addEvent();
+
                         console.log('STARTING SSE BACKEND READ', ret);
                         setPending(false);
                     })
@@ -173,6 +174,11 @@ export const Landing = (props: any): JSX.Element => {
             case ELongTask.Write:
                 WriteRegisters(data, true)
                     .then((ret) => {
+                        sseData.current = [];
+                        sseResult.current = [];
+                        // start sse event
+                        addEvent();
+
                         console.log('STARTING SSE BACKEND WRITE', ret);
                         setPending(false);
                     })
@@ -434,6 +440,13 @@ export const Landing = (props: any): JSX.Element => {
                 setLoading(false);
                 setInitDone(true);
             });
+
+        return () => {
+            // error handling
+            // user close extension when running, then open it again
+            if (eventSource.current) {
+                removeEvent()
+            }}
     }, []);
 
     const handleClose = (
