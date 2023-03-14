@@ -20,8 +20,14 @@ interface iContent {
   bits: string;
 }
 
+interface IProps {
+  row: any;
+  onRowUpdate: any;
+}
+
 const AREA_HEIGHT_MIN = 70;
-export const RegisterData = (props: any): JSX.Element => {
+export const RegisterData = (props: IProps): JSX.Element => {
+  const [editMode, setEditMode] = useState(false);
   const [content, setContent] = useState<iContent>({
     name: undefined,
     description: '',
@@ -113,6 +119,51 @@ export const RegisterData = (props: any): JSX.Element => {
       //);
     });
 
+    function updateBitValue(position: string, value: any) {
+      let start: any;
+      let end: any;
+
+      let splitted: any;
+      try {
+        splitted = position.split('-');
+        start = splitted[0];
+        end = splitted[1];
+      } catch {
+        start = Number(position);
+        end = start;
+      }
+
+      const str_len = end - start + 1;
+      const bin_pos = Number(value).toString(2).padStart(str_len, '0');
+      let bin_value = Number(props.row.value).toString(2).padStart(32, '0');
+
+      if (bin_pos.length > end - start + 1) {
+        console.log('invalid value');
+        return;
+      }
+
+      let bin_new =
+        bin_value.substring(0, bin_value.length - end - 1) +
+        bin_pos +
+        bin_value.substring(bin_value.length - start);
+      let r: any = {};
+      Object.assign(r, props.row);
+      r.value = parseInt(bin_new, 2);
+      props.onRowUpdate(r);
+    }
+
+    function onEditDone(value: any, row: any) {
+      updateBitValue(row.position, value);
+      setEditMode(false);
+    }
+
+    const handleValueKeyPress = (event: any, row: any) => {
+      if (event.key === 'Enter') {
+        const value = event.target.value;
+        onEditDone(value, row);
+      }
+    };
+
     return (
       <Stack sx={{ width: '100%' }}>
         <TableContainer component={Paper}>
@@ -157,17 +208,35 @@ export const RegisterData = (props: any): JSX.Element => {
                     {row.rw}
                   </TableCell>
                   <TableCell sx={{ fontSize: 10, py: 0 }} align="center">
-                    <Input
-                      value={row.value}
-                      sx={{
-                        fontSize: 10,
-                        py: 0,
-                        height: 20,
-                        width: 30
-                      }}
-                      readOnly
-                      inputProps={{ min: 0, style: { textAlign: 'center' } }}
-                    />
+                    <Stack sx={{ display: editMode ? 'none' : 'flex' }}>
+                      <Input
+                        onClick={(e) => {
+                          setEditMode(true);
+                        }}
+                        value={row.value}
+                        sx={{
+                          fontSize: 10,
+                          py: 0,
+                          height: 20,
+                          width: 30
+                        }}
+                        inputProps={{ min: 0, style: { textAlign: 'center' } }}
+                      />
+                    </Stack>
+                    <Stack sx={{ display: editMode ? 'flex' : 'none' }}>
+                      <Input
+                        onKeyPress={(e) => handleValueKeyPress(e, row)}
+                        onBlur={(e) => onEditDone(e.currentTarget.value, row)}
+                        defaultValue={row.value}
+                        sx={{
+                          fontSize: 10,
+                          py: 0,
+                          height: 20,
+                          width: 30
+                        }}
+                        inputProps={{ min: 0, style: { textAlign: 'center' } }}
+                      />
+                    </Stack>
                   </TableCell>
                 </TableRow>
               ))}

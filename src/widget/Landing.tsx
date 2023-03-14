@@ -249,6 +249,7 @@ export const Landing = (props: any): JSX.Element => {
             target.address = r.address;
             target.name = r.name;
             target.modified = true;
+            target.value = r.value;
 
             let newRow: any = [];
             Object.assign(newRow, target);

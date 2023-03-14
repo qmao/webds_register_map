@@ -96,7 +96,7 @@ export const RegisterViewerContent = (props: IProps): JSX.Element => {
             display: !isFilterPage && !props.isLoading ? 'block' : 'none'
           }}
         >
-          <RegisterData row={currentRow} />
+          <RegisterData row={currentRow} onRowUpdate={onRowUpdate} />
         </Stack>
       </Container>
     </Stack>
