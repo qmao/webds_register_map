@@ -7,15 +7,17 @@ import {
     Toolbar,
     IconButton,
     InputBase,
-    Badge,
-    Tooltip
+    Badge
 } from '@mui/material';
 
-import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
+import DescriptionIcon from '@mui/icons-material/Description';
+import OutputIcon from '@mui/icons-material/Output';
+import AddchartIcon from '@mui/icons-material/Addchart';
 
 import FilterListIcon from '@mui/icons-material/FilterList';
-import { RenderMenu } from './RegisterToolbar';
+import { RenderMenuExport } from './RegisterToolbarExport';
+import { RenderMenuImport } from './RegisterToolbarImport';
 
 const Search = styled('div')(({ theme }) => ({
     position: 'relative',
@@ -60,11 +62,14 @@ interface IProps {
     onFilterClick?: any;
     rows: any;
     filtered: any;
+    onRowUpdate: any;
 }
 
 export default function PrimarySearchAppBar(props: IProps) {
     const [openExport, setOpenExport] = useState(null);
+    const [openImport, setOpenImport] = useState(null);
     const [searchText, setSearchText] = useState('');
+    const [showMenu, setShowMenu] = useState(false);
 
     return (
         <Box sx={{ flexGrow: 1 }}>
@@ -75,7 +80,7 @@ export default function PrimarySearchAppBar(props: IProps) {
                             <SearchIcon />
                         </SearchIconWrapper>
                         <StyledInputBase
-                            placeholder="Search..."
+                            placeholder="Search…"
                             inputProps={{ 'aria-label': 'search' }}
                             onKeyPress={(event: any) => {
                                 if (event.key === 'Enter') {
@@ -91,43 +96,69 @@ export default function PrimarySearchAppBar(props: IProps) {
 
                     <Box sx={{ flexGrow: 1 }} />
                     <Stack direction="row" spacing={1}>
-                        <Tooltip title="Filter" placement="top">
+                        <IconButton
+                            size="large"
+                            aria-label="show 4 new mails"
+                            color="inherit"
+                            onClick={(e: any) => {
+                                props.onFilterClick();
+                            }}
+                        >
+                            <Badge badgeContent={props.filtered} color="error">
+                                <FilterListIcon />
+                            </Badge>
+                        </IconButton>
+
+                        <Stack sx={{ display: showMenu ? 'flex' : 'none' }}>
                             <IconButton
                                 size="large"
-                                aria-label="show badge"
                                 color="inherit"
                                 onClick={(e: any) => {
-                                    props.onFilterClick();
+                                    setShowMenu(false);
                                 }}
                             >
-                                <Badge badgeContent={props.filtered} color="error">
-                                    <FilterListIcon />
-                                </Badge>
+                                <DescriptionIcon />
                             </IconButton>
-                        </Tooltip>
+                        </Stack>
 
-                        <Tooltip title="Menu" placement="top">
+                        <Stack direction="row" sx={{ display: showMenu ? 'none' : 'flex' }}>
                             <IconButton
                                 size="large"
-                                edge="start"
                                 color="inherit"
-                                aria-label="open drawer"
-                                sx={{ mr: 2 }}
                                 onClick={(e: any) => {
                                     setOpenExport(e.currentTarget);
                                     console.log();
                                 }}
                             >
-                                <MenuIcon />
+                                <OutputIcon />
                             </IconButton>
-                        </Tooltip>
-                        <RenderMenu
-                            data={props.rows}
-                            open={openExport}
-                            onClose={() => {
-                                setOpenExport(null);
-                            }}
-                        />
+                            <RenderMenuExport
+                                data={props.rows}
+                                open={openExport}
+                                onClose={() => {
+                                    setOpenExport(null);
+                                }}
+                            />
+
+                            <IconButton
+                                size="large"
+                                color="inherit"
+                                onClick={(e: any) => {
+                                    setOpenImport(e.currentTarget);
+                                    console.log();
+                                }}
+                            >
+                                <AddchartIcon />
+                            </IconButton>
+                            <RenderMenuImport
+                                data={props.rows}
+                                open={openImport}
+                                onClose={() => {
+                                    setOpenImport(null);
+                                }}
+                                onRowUpdate={(row: any) => props.onRowUpdate(row)}
+                            />
+                        </Stack>
                     </Stack>
                 </Toolbar>
             </AppBar>

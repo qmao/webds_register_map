@@ -262,20 +262,20 @@ export const Landing = (props: any): JSX.Element => {
     }
 
     /*
-    function updateRow(r: any) {
-      let newRow: any = {
-        address: '',
-        block: '',
-        name: '',
-        value: '',
-        description: '',
-        bits: '',
-        modified: false
-      };
-      Object.assign(newRow, r);
-      setCurrentRow(newRow);
-    }
-  */
+      function updateRow(r: any) {
+        let newRow: any = {
+          address: '',
+          block: '',
+          name: '',
+          value: '',
+          description: '',
+          bits: '',
+          modified: false
+        };
+        Object.assign(newRow, r);
+        setCurrentRow(newRow);
+      }
+    */
 
     function onDataProccess(source: any, data: any) {
         let newData: any = [];
@@ -426,17 +426,18 @@ export const Landing = (props: any): JSX.Element => {
                 setInitDone(true);
             })
             .catch((e: any) => {
+                /*
                 if (false) {
-                    //DEBUG CODE START
-                    /*
-                    defaultRegisterValues.current = parseRegisterJson(demo_data);
-                    defaultList.current.forEach((r: any) => {
-                      r.value = r.address;
-                    });
-                    setRowData(defaultList.current);
-                    */
-                    //DEBUG CODE END
+                  //DEBUG CODE START
+                  defaultRegisterValues.current = parseRegisterJson(demo_data);
+                  defaultList.current.forEach((r: any) => {
+                    r.value = r.address;
+                  });
+                  setRowData(defaultList.current);
+                  //DEBUG CODE END
+                 
                 }
+                 */
                 showMessage('error', e);
                 setLoading(false);
                 setInitDone(true);
@@ -446,8 +447,9 @@ export const Landing = (props: any): JSX.Element => {
             // error handling
             // user close extension when running, then open it again
             if (eventSource.current) {
-                removeEvent()
-            }}
+                removeEvent();
+            }
+        };
     }, []);
 
     const handleClose = (
