@@ -20,7 +20,7 @@ namespace Attributes {
   export const label = "Register Map";
   export const caption = "Register Map";
   export const category = "Device - Assessment";
-  export const rank = 999;
+  export const rank = 70;
 }
 
 export let webdsService: WebDSService;
