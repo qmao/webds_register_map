@@ -123,6 +123,12 @@ export const RegisterData = (props: IProps): JSX.Element => {
             let start: any;
             let end: any;
 
+            if (isNaN(Number(value))) {
+                console.log('invalid value');
+                event.currentTarget.value = 'Error';
+                return false;
+            }
+
             let splitted: any;
             try {
                 splitted = position.split('-');
@@ -150,7 +156,11 @@ export const RegisterData = (props: IProps): JSX.Element => {
             let r: any = {};
             Object.assign(r, props.row);
             r.value = parseInt(bin_new, 2);
-            console.log('QQQQQ DATA SEND:', r);
+
+            if (r.value === props.row.value) {
+                console.log('value same');
+                return true;
+            }
             props.onRowUpdate(r);
             return true;
         }
@@ -217,6 +227,7 @@ export const RegisterData = (props: IProps): JSX.Element => {
                                     </TableCell>
                                     <TableCell sx={{ fontSize: 10, py: 0 }} align="center">
                                         <Stack
+                                            alignItems="center"
                                             sx={{
                                                 display: props.row.value === undefined ? 'none' : 'flex'
                                             }}
@@ -231,7 +242,7 @@ export const RegisterData = (props: IProps): JSX.Element => {
                                                         fontSize: 10,
                                                         py: 0,
                                                         height: 20,
-                                                        width: 30
+                                                        width: 50
                                                     }}
                                                     inputProps={{
                                                         min: 0,
@@ -250,7 +261,7 @@ export const RegisterData = (props: IProps): JSX.Element => {
                                                         fontSize: 10,
                                                         py: 0,
                                                         height: 20,
-                                                        width: 30
+                                                        width: 50
                                                     }}
                                                     inputProps={{
                                                         min: 0,

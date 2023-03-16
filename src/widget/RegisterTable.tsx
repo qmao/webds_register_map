@@ -324,7 +324,7 @@ export const RegisterTable = (props: IProps): JSX.Element => {
                     case 'Bits':
                         return value.bits.indexOf(f.value) >= 0;
                     case 'Modified':
-                        return value.modified.indexOf(f.value) === true;
+                        return value.modified === true;
                     default:
                         return false;
                 }

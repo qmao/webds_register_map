@@ -263,20 +263,20 @@ export const Landing = (props: any): JSX.Element => {
     }
 
     /*
-      function updateRow(r: any) {
-        let newRow: any = {
-          address: '',
-          block: '',
-          name: '',
-          value: '',
-          description: '',
-          bits: '',
-          modified: false
-        };
-        Object.assign(newRow, r);
-        setCurrentRow(newRow);
-      }
-    */
+        function updateRow(r: any) {
+          let newRow: any = {
+            address: '',
+            block: '',
+            name: '',
+            value: '',
+            description: '',
+            bits: '',
+            modified: false
+          };
+          Object.assign(newRow, r);
+          setCurrentRow(newRow);
+        }
+      */
 
     function onDataProccess(source: any, data: any) {
         let newData: any = [];
@@ -422,23 +422,23 @@ export const Landing = (props: any): JSX.Element => {
                 return CheckFWMode();
             })
             .then((mode: any) => {
-                showMessage('success', mode);
+                showMessage('success', mode.mode);
                 startLongTask(ELongTask.Read, defaultRegisterValues.current);
                 setInitDone(true);
             })
             .catch((e: any) => {
                 /*
-                if (false) {
-                  //DEBUG CODE START
-                  defaultRegisterValues.current = parseRegisterJson(demo_data);
-                  defaultList.current.forEach((r: any) => {
-                    r.value = r.address;
-                  });
-                  setRowData(defaultList.current);
-                  //DEBUG CODE END
-                 
-                }
-                 */
+                        if (false) {
+                          //DEBUG CODE START
+                          defaultRegisterValues.current = parseRegisterJson(demo_data);
+                          defaultList.current.forEach((r: any) => {
+                            r.value = r.address;
+                          });
+                          setRowData(defaultList.current);
+                          //DEBUG CODE END
+                         
+                        }
+                         */
                 showMessage('error', e);
                 setLoading(false);
                 setInitDone(true);
