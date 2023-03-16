@@ -118,25 +118,25 @@ const headCells: readonly HeadCell[] = [
         disablePadding: true
     }
     /*,
-        {
-          id: 'description',
-          label: 'Description',
-          numeric: false,
-          disablePadding: true
-        },
-        {
-          id: 'bits',
-          label: 'Bits',
-          numeric: false,
-          disablePadding: true
-        },
-        {
-          id: 'modified',
-          label: 'Modified',
-          numeric: false,
-          disablePadding: true
-        }
-        */
+          {
+            id: 'description',
+            label: 'Description',
+            numeric: false,
+            disablePadding: true
+          },
+          {
+            id: 'bits',
+            label: 'Bits',
+            numeric: false,
+            disablePadding: true
+          },
+          {
+            id: 'modified',
+            label: 'Modified',
+            numeric: false,
+            disablePadding: true
+          }
+          */
 ];
 
 interface EnhancedTableProps {
@@ -290,18 +290,18 @@ export const RegisterTable = (props: IProps): JSX.Element => {
     }, []);
 
     /*
-    const applyFilter___ = (wordToCompare: any) => {
-      return function (value: any) {
-        return (
-          value.name.indexOf(wordToCompare) >= 0 ||
-          value.block.indexOf(wordToCompare) >= 0 ||
-          JSON.stringify(value.bits).indexOf(wordToCompare) >= 0 ||
-          (value.description !== undefined &&
-            value.description.indexOf(wordToCompare) >= 0)
-        );
+      const applyFilter___ = (wordToCompare: any) => {
+        return function (value: any) {
+          return (
+            value.name.indexOf(wordToCompare) >= 0 ||
+            value.block.indexOf(wordToCompare) >= 0 ||
+            JSON.stringify(value.bits).indexOf(wordToCompare) >= 0 ||
+            (value.description !== undefined &&
+              value.description.indexOf(wordToCompare) >= 0)
+          );
+        };
       };
-    };
-  */
+    */
 
     const applyFilter = () => {
         //props.filter
@@ -323,6 +323,8 @@ export const RegisterTable = (props: IProps): JSX.Element => {
                         return value.description.indexOf(f.value) >= 0;
                     case 'Bits':
                         return value.bits.indexOf(f.value) >= 0;
+                    case 'Modified':
+                        return value.modified.indexOf(f.value) === true;
                     default:
                         return false;
                 }
@@ -336,13 +338,15 @@ export const RegisterTable = (props: IProps): JSX.Element => {
     };
 
     const filterList = () => {
-        let newRows = props.rows.filter(applyFilter());
-        updateDisplayList(newRows);
-        if (props.rows.length !== newRows.length) {
-            setPage(0);
-            console.log('setPage 0');
+        if (props.rows !== undefined) {
+            let newRows = props.rows.filter(applyFilter());
+            updateDisplayList(newRows);
+            if (props.rows.length !== newRows.length) {
+                setPage(0);
+                console.log('setPage 0');
+            }
+            console.log('APPLY FILTER');
         }
-        console.log('APPLY FILTER');
     };
 
     useEffect(() => {
@@ -499,20 +503,20 @@ export const RegisterTable = (props: IProps): JSX.Element => {
         return (
             <TableRow
                 /*
-                sx={{
-                  '&.MuiTableRow-hover': {
-                    '&:hover': {
-                      backgroundColor: 'canvas'
-                    }
-                  }
-                  ,
-                      '&.Mui-selected': {
-                        '&:hover': {
-                          backgroundColor: '#dfe999'
-                        }
-                      }  
-                }}
-                */
+                        sx={{
+                          '&.MuiTableRow-hover': {
+                            '&:hover': {
+                              backgroundColor: 'canvas'
+                            }
+                          }
+                          ,
+                              '&.Mui-selected': {
+                                '&:hover': {
+                                  backgroundColor: '#dfe999'
+                                }
+                              }  
+                        }}
+                        */
                 key={`register-table-row-${row.address}`}
                 data-index={row.address}
                 onClick={(event: any) => handleFocus(event, row)}
@@ -637,6 +641,7 @@ export const RegisterTable = (props: IProps): JSX.Element => {
                     }}
                     rows={displayList}
                     filtered={props.filter.length}
+                    onRowUpdate={(row: any) => props.onRowUpdate(row)}
                 />
 
                 <TableContainer sx={{ height: 340, overflowY: 'auto' }}>

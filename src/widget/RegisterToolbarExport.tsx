@@ -100,7 +100,7 @@ interface IProps {
   onClose: any;
 }
 
-export const RenderMenu = (props: IProps) => {
+export const RenderMenuExport = (props: IProps) => {
   const [fileName, setFileName] = useState('webds_register_map');
 
   const FileFormat = {
@@ -150,54 +150,56 @@ export const RenderMenu = (props: IProps) => {
   };
 
   return (
-    <Menu
-      anchorEl={props.open}
-      id={menuId}
-      keepMounted
-      open={props.open !== null}
-      onClose={handleMenuClose}
-      anchorOrigin={{
-        vertical: 'bottom',
-        horizontal: 'left'
-      }}
-      transformOrigin={{
-        vertical: 'top',
-        horizontal: 'left'
-      }}
-    >
-      <Stack alignItems="center">
-        <TextField
-          label="File Name"
-          id="filled-size-small"
-          value={fileName}
-          variant="standard"
-          size="small"
-          sx={{ fontSize: 12, mx: 2, my: 1, width: 220 }}
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            setFileName(event.target.value);
+    <>
+      <Menu
+        anchorEl={props.open}
+        id={menuId}
+        keepMounted
+        open={props.open !== null}
+        onClose={handleMenuClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left'
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left'
+        }}
+      >
+        <Stack alignItems="center">
+          <TextField
+            label="File Name"
+            id="filled-size-small"
+            value={fileName}
+            variant="standard"
+            size="small"
+            sx={{ fontSize: 12, mx: 2, my: 1, width: 220 }}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+              setFileName(event.target.value);
+            }}
+          />
+        </Stack>
+        <MenuItem
+          onClick={() => {
+            handleMenuClose(FileFormat.CSV);
           }}
-        />
-      </Stack>
-      <MenuItem
-        onClick={() => {
-          handleMenuClose(FileFormat.CSV);
-        }}
-      >
-        <ListItemIcon>
-          <FileDownloadIcon fontSize="small" />
-        </ListItemIcon>
-        <Typography sx={{ fontSize: 14 }}>To CSV</Typography>
-      </MenuItem>
-      <MenuItem
-        onClick={() => {
-          handleMenuClose(FileFormat.JSON);
-        }}
-      >
-        <ListItemIcon>
-          <FileDownloadIcon fontSize="small" />
-        </ListItemIcon>
-        <Typography sx={{ fontSize: 14 }}>To JSON</Typography>
-      </MenuItem>
-    </Menu>
+        >
+          <ListItemIcon>
+            <FileDownloadIcon fontSize="small" />
+          </ListItemIcon>
+          <Typography sx={{ fontSize: 14 }}>To CSV</Typography>
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            handleMenuClose(FileFormat.JSON);
+          }}
+        >
+          <ListItemIcon>
+            <FileDownloadIcon fontSize="small" />
+          </ListItemIcon>
+          <Typography sx={{ fontSize: 14 }}>To JSON</Typography>
+        </MenuItem>
+      </Menu>
+    </>
   );
 };

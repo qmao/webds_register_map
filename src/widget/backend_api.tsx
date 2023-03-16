@@ -1,100 +1,100 @@
 import { requestAPI } from '../handler';
 
 export async function ReadRegisters(data: any, sse: any): Promise<Number[]> {
-    var dataToSend = {
-        command: 'read',
-        sse: sse,
-        data: data
-    };
+  var dataToSend = {
+    command: 'read',
+    sse: sse,
+    data: data
+  };
 
-    try {
-        const reply = await requestAPI<any>('register', {
-            body: JSON.stringify(dataToSend),
-            method: 'POST'
-        });
+  try {
+    const reply = await requestAPI<any>('register', {
+      body: JSON.stringify(dataToSend),
+      method: 'POST'
+    });
 
-        let value = reply['data'];
-        return Promise.resolve(value);
-    } catch (e) {
-        console.error(`Error on POST ${dataToSend}.\n${e}`);
-        return Promise.reject((e as Error).message);
-    }
+    let value = reply['data'];
+    return Promise.resolve(value);
+  } catch (e) {
+    console.error(`Error on POST ${dataToSend}.\n${e}`);
+    return Promise.reject((e as Error).message);
+  }
 }
 
 export async function WriteRegisters(
-    data: any,
-    sse: any
+  data: any,
+  sse: any
 ): Promise<string | undefined> {
-    var dataToSend = {
-        command: 'write',
-        sse: sse,
-        data: data
-    };
+  var dataToSend = {
+    command: 'write',
+    sse: sse,
+    data: data
+  };
 
-    try {
-        const reply = await requestAPI<any>('register', {
-            body: JSON.stringify(dataToSend),
-            method: 'POST'
-        });
+  try {
+    const reply = await requestAPI<any>('register', {
+      body: JSON.stringify(dataToSend),
+      method: 'POST'
+    });
 
-        let value = reply['data'];
-        return Promise.resolve(value);
-    } catch (e) {
-        console.error(`Error on POST ${dataToSend}.\n${e}`);
-        return Promise.reject((e as Error).message);
-    }
+    let value = reply['data'];
+    return Promise.resolve(value);
+  } catch (e) {
+    console.error(`Error on POST ${dataToSend}.\n${e}`);
+    return Promise.reject((e as Error).message);
+  }
 }
 
 export async function GetJson(): Promise<string> {
-    var dataToSend = {
-        command: 'init'
-    };
+  var dataToSend = {
+    command: 'init'
+  };
 
-    try {
-        const reply = await requestAPI<any>('register', {
-            body: JSON.stringify(dataToSend),
-            method: 'POST'
-        });
+  try {
+    const reply = await requestAPI<any>('register', {
+      body: JSON.stringify(dataToSend),
+      method: 'POST'
+    });
 
-        return Promise.resolve(reply);
-    } catch (e) {
-        console.error(`Error on POST ${dataToSend}.\n${e}`);
-        return Promise.reject((e as Error).message);
-    }
+    return Promise.resolve(reply);
+  } catch (e) {
+    console.error(`Error on POST ${dataToSend}.\n${e}`);
+    return Promise.reject((e as Error).message);
+  }
 }
 
 export async function CheckFWMode(): Promise<string> {
-    var dataToSend = {
-        command: 'check_mode'
-    };
+  var dataToSend = {
+    command: 'check_mode'
+  };
 
-    try {
-        const reply = await requestAPI<any>('register', {
-            body: JSON.stringify(dataToSend),
-            method: 'POST'
-        });
+  try {
+    const reply = await requestAPI<any>('register', {
+      body: JSON.stringify(dataToSend),
+      method: 'POST'
+    });
 
-        return Promise.resolve(reply['mode']);
-    } catch (e) {
-        console.error(`Error on POST ${dataToSend}.\n${e}`);
-        return Promise.reject((e as Error).message);
-    }
+    return Promise.resolve(reply);
+  } catch (e) {
+    console.error(`Error on POST ${dataToSend}.\n${e}`);
+    return Promise.reject((e as Error).message);
+  }
 }
 
 export async function TerminateSSE(): Promise<string | undefined> {
-    var dataToSend = {
-        command: 'terminate'
-    };
+  var dataToSend = {
+    command: 'terminate'
+  };
 
-    try {
-        const reply = await requestAPI<any>('register', {
-            body: JSON.stringify(dataToSend),
-            method: 'POST'
-        });
+  try {
+    const reply = await requestAPI<any>('register', {
+      body: JSON.stringify(dataToSend),
+      method: 'POST'
+    });
 
-        return Promise.resolve(reply);
-    } catch (e) {
-        console.error(`Error on POST ${dataToSend}.\n${e}`);
-        return Promise.reject((e as Error).message);
-    }
+    return Promise.resolve(reply);
+  } catch (e) {
+    console.error(`Error on POST ${dataToSend}.\n${e}`);
+    return Promise.reject((e as Error).message);
+  }
 }

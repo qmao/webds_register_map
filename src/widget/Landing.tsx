@@ -254,6 +254,7 @@ export const Landing = (props: any): JSX.Element => {
             let newRow: any = [];
             Object.assign(newRow, target);
             currentRow.current = newRow;
+
             setRowData(newData);
             setLoading(false);
         } else {
